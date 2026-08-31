@@ -1,0 +1,22 @@
+.git/
+.gitignore
+
+# Local runtime state
+data/
+output/
+*.db
+*.db-wal
+*.db-shm
+*.log
+__pycache__/
+*.py[cod]
+
+# Documentation assets are not needed at runtime.
+docs/
+
+# Local editor and environment files
+.venv/
+venv/
+.env
+.env.*
+!.env.example

@@ -1,0 +1,19 @@
+services:
+  watermark-webui:
+    image: tannic666/watermark-webui:latest
+    container_name: watermark-webui
+    restart: unless-stopped
+    ports:
+      - "${WATERMARK_PORT:-8655}:8655"
+    environment:
+      WATERMARK_SECRET_KEY: ${WATERMARK_SECRET_KEY:-change-this-local-secret}
+      WATERMARK_DATA_DIR: /app/data
+      WATERMARK_COOKIE_SECURE: ${WATERMARK_COOKIE_SECURE:-false}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8655/api/health', timeout=3).read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

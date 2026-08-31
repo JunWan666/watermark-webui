@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">Invisible Watermark</title>
+  <rect width="48" height="48" rx="12" fill="#172b4d"/>
+  <g fill="none" stroke="#dbe8ff" stroke-linecap="round" stroke-width="1.4" opacity=".78">
+    <ellipse cx="24" cy="24" rx="19" ry="9" transform="rotate(-28 24 24)"/>
+    <ellipse cx="24" cy="24" rx="9" ry="19" transform="rotate(-28 24 24)"/>
+  </g>
+  <circle cx="24" cy="24" r="5" fill="#18b6c9"/>
+  <circle cx="24" cy="24" r="2.2" fill="#8be5ed"/>
+</svg>

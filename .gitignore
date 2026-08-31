@@ -1,0 +1,26 @@
+# Runtime data and generated files
+data/*
+!data/.gitkeep
+output/
+*.db-wal
+*.db-shm
+*.log
+
+# Python tooling
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Local configuration and operating-system files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

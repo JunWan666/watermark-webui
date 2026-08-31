@@ -1,0 +1,6 @@
+blind-watermark
+flask
+gunicorn
+numpy
+opencv-python-headless
+PyWavelets
