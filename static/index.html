@@ -140,6 +140,11 @@
     .preview img { width: 100%; height: 145px; object-fit: contain; border-radius: 9px; background: #edf1f6; }
     .file-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-soft); font-size: 11px; }
     .galaxy-drop.has-file .drop-inner { display: none; }
+    .upload-owner { position: relative; }
+    .upload-clear { position: absolute; top: 39px; right: 10px; z-index: 4; width: 32px; height: 32px; display: none; place-items: center; padding: 0; border: 1px solid rgba(217,83,105,.25); border-radius: 8px; color: var(--rose); background: rgba(255,255,255,.94); box-shadow: 0 3px 10px rgba(30,52,86,.10); cursor: pointer; }
+    .upload-clear.show { display: grid; }
+    .upload-clear:hover { border-color: var(--rose); background: #fff7f8; }
+    .upload-clear .icon { width: 15px; height: 15px; }
 
     .form-footer { margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-top: 17px; border-top: 1px solid var(--line); }
     .secure-note { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-faint); font-size: 11px; }
@@ -382,6 +387,15 @@
     .action-label { color: var(--ink); font-size: 11px; font-weight: 750; letter-spacing: .04em; }
     .control-action .secure-note { font-size: 10px; justify-content: center; }
     .control-action .galaxy-button { width: 100%; min-height: 38px; padding: 0 10px; font-size: 12px; }
+    .action-buttons { display: grid; grid-template-columns: minmax(92px, auto) minmax(0, 1fr); gap: 8px; }
+    .password-field { min-width: 0; display: grid; gap: 6px; }
+    .password-field[hidden] { display: none; }
+    .password-field > label { font-size: 11px; color: var(--ink-soft); font-weight: 650; }
+    .split-password-option { width: fit-content; display: inline-flex !important; align-items: center; gap: 6px !important; color: var(--ink-faint) !important; font-size: 9px !important; font-weight: 500 !important; cursor: pointer; }
+    .split-password-option input { margin: 0; accent-color: var(--blue); }
+    .split-password-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .split-password-fields[hidden] { display: none; }
+    .split-password-fields .galaxy-input { min-width: 0; }
     .history-full { width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 21px 24px 20px; }
     .history-full .history-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
     .result-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin-top: 7px; }
@@ -416,6 +430,7 @@
       .control-action { flex-basis: auto; }
       .control-action .secure-note { justify-content: flex-start; }
       .control-action .galaxy-button { min-height: 40px; }
+      .action-buttons { grid-template-columns: minmax(90px, .45fr) minmax(0, 1fr); }
       .result-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     /* Image reveal flow: begin as one large source canvas, then split on submit. */
@@ -491,37 +506,19 @@
     .history-refresh { width: 38px; min-height: 38px; padding: 0; color: var(--ink-soft); background: var(--surface-soft); border: 1px solid var(--line-strong); }
     .history-list { align-content: start; }
     .history-full .history-list { padding-top: 14px; gap: 10px; }
-    .record-row { display: grid; grid-template-columns: 148px minmax(220px, 1.15fr) minmax(200px, .9fr) minmax(168px, auto); gap: 15px; align-items: center; min-height: 94px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: #fcfdff; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
-    .record-row:hover { border-color: #c8d8ef; box-shadow: 0 8px 24px rgba(30,52,86,.08); transform: translateY(-1px); }
-    .record-images { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 148px; }
-    .record-thumb { position: relative; width: 100%; height: 64px; overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: #eef2f7; }
-    .record-thumb img { width: 100%; height: 100%; object-fit: contain; }
-    .record-thumb span { position: absolute; left: 4px; bottom: 4px; padding: 2px 4px; border-radius: 4px; color: #fff; background: rgba(20,32,51,.68); font-size: 8px; }
-    .record-thumb.empty { display: grid; place-items: center; color: var(--ink-faint); }
-    .record-main, .record-detail { min-width: 0; }
-    .record-title-line { display: flex; align-items: center; gap: 7px; min-width: 0; }
-    .record-type { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; color: var(--blue-deep); background: #edf3ff; font-size: 9px; font-weight: 700; }
-    .record-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 700; }
-    .record-watermark { margin-top: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-soft); font-size: 11px; }
-    .record-time { margin-top: 5px; color: var(--ink-faint); font-size: 9px; }
-    .record-detail { display: grid; gap: 6px; }
-    .record-detail span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-faint); font-size: 10px; }
-    .record-detail strong { color: var(--ink-soft); font-weight: 650; }
-    .record-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
-    .record-actions .galaxy-button { min-height: 32px; padding: 0 10px; font-size: 10px; }
-    .record-actions .danger { width: 32px; padding: 0; color: var(--rose); border: 1px solid #f0ccd2; background: #fff7f8; }
-
     /* Authentication and record details. */
     .modal-layer { position: fixed; inset: 0; z-index: 110; display: none; align-items: center; justify-content: center; padding: 22px; background: rgba(10,18,32,.66); backdrop-filter: blur(7px); }
     .modal-layer.open { display: flex; }
     .modal-card { width: min(520px, 94vw); max-height: 90dvh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 28px 80px rgba(8,24,48,.32); }
-    .modal-card.wide { width: min(920px, 96vw); }
+    #recordModal { padding: 16px; }
+    #recordModal .modal-card.wide { width: min(1480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
     .modal-head { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 19px; border-bottom: 1px solid var(--line); }
     .modal-head h2 { margin: 0; font-size: 16px; }
     .modal-head p { margin: 4px 0 0; color: var(--ink-faint); font-size: 10px; }
     .icon-button { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; color: var(--ink-soft); background: var(--surface-soft); cursor: pointer; }
     .icon-button:hover { color: var(--blue); }
     .modal-body { min-height: 0; padding: 18px 19px; overflow: auto; }
+    #recordDetailBody { padding: 14px 16px 16px; }
     .auth-layer { z-index: 130; background: #eef3f8; backdrop-filter: none; }
     .auth-locked .app-shell, .auth-locked .mobile-nav { visibility: hidden; }
     .auth-card { width: min(420px, 94vw); }
@@ -537,23 +534,32 @@
     .detail-images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .detail-image { min-width: 0; }
     .detail-image label { display: block; margin-bottom: 6px; color: var(--ink-soft); font-size: 10px; font-weight: 700; }
-    .detail-image img, .detail-image .empty-image { width: 100%; height: 230px; object-fit: contain; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); }
+    .detail-image img, .detail-image .empty-image { width: 100%; height: 220px; object-fit: contain; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); }
     .detail-image .empty-image { display: grid; place-items: center; color: var(--ink-faint); font-size: 11px; }
     .detail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 13px; }
     .detail-cell { min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 7px; background: #fbfcfe; }
     .detail-cell label { display: block; color: var(--ink-faint); font-size: 9px; }
     .detail-cell strong { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: 11px; }
     .detail-cell.detail-watermark strong { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
-    .detail-note { margin-top: 13px; }
-    .detail-note textarea { min-height: 76px; resize: vertical; }
-    .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .detail-note { margin-top: 10px; }
+    .detail-note textarea { min-height: 58px; resize: vertical; }
+    .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .detail-actions .galaxy-button { min-height: 36px; font-size: 11px; }
-    @media (max-width: 1080px) {
-      .record-row { grid-template-columns: 124px minmax(0, 1fr) minmax(132px, auto); gap: 12px; }
-      .record-images { width: 124px; }
-      .record-detail { grid-column: 2; display: flex; flex-wrap: wrap; gap: 5px 13px; }
-      .record-detail span { flex: 0 1 auto; }
-      .record-actions { grid-column: 3; grid-row: 1 / span 2; }
+    @media (min-width: 1101px) {
+      .detail-images-recovery { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+      .detail-images-recovery .detail-image img, .detail-images-recovery .detail-image .empty-image { height: 210px; }
+      .detail-grid-recovery { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 7px; margin-top: 11px; }
+      .detail-grid-recovery .detail-cell { padding: 7px 8px; }
+      .detail-grid-recovery .detail-cell strong { font-size: 10px; }
+    }
+    @media (min-width: 1101px) and (max-height: 760px) {
+      .detail-images-recovery .detail-image img, .detail-images-recovery .detail-image .empty-image { height: 160px; }
+      .detail-note textarea { min-height: 48px; }
+    }
+    @media (max-width: 1100px) {
+      #recordModal { padding: 12px; }
+      #recordModal .modal-card.wide { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
+      .detail-images-recovery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 820px) {
       .history-toolbar { grid-template-columns: minmax(0, 1fr) 132px 38px; }
@@ -563,44 +569,21 @@
       .viewer-dialog { width: 100vw; height: 100dvh; border: 0; border-radius: 0; }
       .viewer-actions a span { display: none; }
       .history-toolbar { grid-template-columns: minmax(0, 1fr) 110px auto; }
-      .record-row { grid-template-columns: 100px minmax(0, 1fr) auto; gap: 9px; }
-      .record-images { width: 100px; }
-      .record-thumb { height: 48px; }
-      .record-detail { display: none; }
-      .record-actions { flex-direction: column; }
-      .record-actions .galaxy-button { width: 32px; padding: 0; font-size: 0; }
-      .record-actions .galaxy-button .icon { width: 15px; height: 15px; }
       .modal-layer { padding: 0; }
-      .modal-card, .modal-card.wide, .auth-card { width: 100vw; max-height: 100dvh; border: 0; border-radius: 0; }
+      #recordModal { padding: 0; }
+      .modal-card, .modal-card.wide, .auth-card, #recordModal .modal-card.wide { width: 100vw; max-height: 100dvh; border: 0; border-radius: 0; }
       .detail-images { grid-template-columns: 1fr; }
       .detail-image img, .detail-image .empty-image { height: 180px; }
       .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    /* Full-width workspace and readable record cards. */
+    /* Full-width workspace. */
     .topbar { padding-left: 24px; padding-right: 24px; }
     .content { max-width: none; margin: 0; padding-left: 24px; padding-right: 24px; }
     .workspace-shell { max-width: none; }
     .workspace-card, .history-full { width: 100%; }
     .galaxy-panel.gx-card.history-full { padding: 24px 28px 24px; }
     .history-toolbar { grid-template-columns: minmax(300px, 1fr) 170px 40px; gap: 11px; }
-    .record-row {
-      grid-template-columns: 184px minmax(260px, 1.1fr) minmax(250px, 1fr) auto;
-      gap: 20px;
-      min-height: 118px;
-      padding: 15px 17px;
-    }
-    .record-images { width: 184px; gap: 8px; }
-    .record-thumb { height: 86px; border-radius: 8px; }
-    .record-thumb span { left: 5px; bottom: 5px; font-size: 9px; }
-    .record-title { font-size: 13px; line-height: 1.35; white-space: normal; overflow-wrap: anywhere; }
-    .record-watermark { margin-top: 8px; font-size: 12px; line-height: 1.45; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-    .record-time { margin-top: 7px; font-size: 10px; }
-    .record-detail { gap: 7px; }
-    .record-detail span { font-size: 11px; line-height: 1.35; white-space: normal; overflow: visible; text-overflow: clip; }
-    .record-actions { gap: 7px; }
-    .record-actions .galaxy-button { min-height: 36px; padding: 0 11px; font-size: 11px; }
-    .record-actions .danger { width: 36px; }
     .history-list { width: 100%; overflow-x: hidden; }
     .history-head { padding: 2px 2px 5px; }
     .history-head h2 { font-size: 18px; line-height: 1.3; }
@@ -609,16 +592,6 @@
     @media (max-width: 1200px) {
       .content { padding-left: 20px; padding-right: 20px; }
       .galaxy-panel.gx-card.history-full { padding: 22px 22px 22px; }
-      .record-row {
-        grid-template-columns: 136px minmax(0, 1fr) minmax(155px, auto);
-        gap: 14px;
-        min-height: 112px;
-      }
-      .record-images { width: 136px; }
-      .record-thumb { height: 78px; }
-      .record-detail { grid-column: 2; display: flex; flex-wrap: wrap; gap: 5px 14px; }
-      .record-detail span { flex: 0 1 auto; white-space: normal; }
-      .record-actions { grid-column: 3; grid-row: 1 / span 2; }
     }
 
     @media (max-width: 820px) {
@@ -626,92 +599,65 @@
       .content { padding-left: 13px; padding-right: 13px; }
       .galaxy-panel.gx-card.history-full { padding: 18px 16px 18px; }
       .history-toolbar { grid-template-columns: minmax(0, 1fr) 132px 38px; }
-      .record-row { min-height: 108px; padding: 12px 13px; }
-      .record-title { font-size: 12px; }
-      .record-watermark { font-size: 11px; }
-      .record-detail span { font-size: 10px; }
-      .record-actions .galaxy-button { min-height: 32px; padding: 0 9px; font-size: 10px; }
     }
 
-    @media (max-width: 700px) {
-      .record-row { grid-template-columns: 112px minmax(0, 1fr) auto; gap: 10px; }
-      .record-images { width: 112px; }
-      .record-thumb { height: 68px; }
-      .record-detail { display: none; }
-      .record-actions { grid-column: 3; grid-row: 1; flex-direction: column; }
-      .record-actions .galaxy-button { width: 34px; min-height: 32px; padding: 0; font-size: 0; }
-      .record-actions .galaxy-button .icon { width: 15px; height: 15px; }
-      .record-actions .danger { width: 34px; }
-    }
-
-    /* Record card hierarchy: media, identity, metadata, actions. */
+    /* Record list: one record per row with explicit selection and actions. */
+    .history-selection { min-height: 46px; display: flex; align-items: center; gap: 16px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
+    .history-select-all { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 11px; cursor: pointer; user-select: none; }
+    .history-select-all input, .record-select-wrap input { width: 16px; height: 16px; margin: 0; accent-color: var(--blue); cursor: pointer; }
+    .history-selected-count { color: var(--ink-faint); font-size: 10px; }
+    .history-batch-delete { min-height: 34px; margin-left: auto; padding: 0 12px; color: var(--rose); border: 1px solid #f0ccd2; background: #fff7f8; font-size: 10px; }
+    .history-batch-delete:disabled { opacity: .45; cursor: not-allowed; }
+    .history-full .history-list { grid-template-columns: 1fr; align-items: start; padding: 12px 2px 2px; gap: 9px; overflow-x: hidden; scrollbar-gutter: stable; }
     .record-row {
-      grid-template-columns: 184px minmax(250px, 1.12fr) minmax(290px, 1fr) 190px;
-      align-items: stretch;
-      min-height: 132px;
-      padding: 18px 20px;
-      gap: 20px;
-      border-radius: 12px;
-    }
-    .record-images { align-self: center; }
-    .record-main { min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 4px; }
-    .record-title-line { align-items: flex-start; }
-    .record-title { line-height: 1.4; }
-    .record-watermark { margin-top: 9px; line-height: 1.5; }
-    .record-detail {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-content: center;
-      gap: 8px;
-      padding-left: 18px;
-      border-left: 1px solid #e8edf4;
-    }
-    .record-meta-item {
-      display: block;
       min-width: 0;
-      padding: 8px 10px;
-      border: 1px solid #edf1f6;
-      border-radius: 8px;
-      background: #f8fafc;
-    }
-    .record-meta-item strong { display: block; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
-    .record-meta-item em { display: block; margin-top: 3px; overflow-wrap: anywhere; color: var(--ink-soft); font-size: 10px; font-style: normal; line-height: 1.3; }
-    .record-actions {
+      min-height: 122px;
       display: grid;
-      grid-template-rows: auto 1fr;
-      align-content: center;
-      gap: 8px;
-      padding-left: 18px;
-      border-left: 1px solid #e8edf4;
+      grid-template-columns: 24px 160px minmax(210px, .9fr) minmax(340px, 1.25fr) 176px;
+      grid-template-areas: "select images main detail actions";
+      align-items: center;
+      gap: 16px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fcfdff;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
-    .actions-heading { color: var(--ink-faint); font-size: 9px; font-weight: 700; letter-spacing: .08em; }
-    .actions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; align-content: center; }
-    .record-actions .galaxy-button { width: 100%; min-width: 0; min-height: 34px; padding: 0 8px; font-size: 10px; }
-    .record-actions .galaxy-button:not(.danger) { border: 1px solid #dbe4f1; background: #fff; color: var(--ink-soft); box-shadow: 0 2px 5px rgba(30,52,86,.04); }
+    .record-row:hover { border-color: #bfd0e8; box-shadow: 0 5px 16px rgba(30,52,86,.06); transform: none; }
+    .record-row.is-selected { border-color: #a9c2e8; background: #f7faff; }
+    .record-select-wrap { grid-area: select; align-self: stretch; display: grid; place-items: center; cursor: pointer; }
+    .record-images { grid-area: images; width: 160px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .record-thumb { position: relative; width: 100%; height: 86px; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 7px; color: var(--ink-faint); background: #eef2f7; cursor: zoom-in; }
+    .record-thumb img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+    .record-thumb span { position: absolute; left: 5px; bottom: 5px; padding: 2px 5px; border-radius: 4px; color: #fff; background: rgba(20,32,51,.78); font-size: 8px; pointer-events: none; }
+    .record-thumb.empty { display: grid; place-items: center; cursor: default; }
+    .record-main { grid-area: main; min-width: 0; }
+    .record-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .record-type { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; font-size: 9px; font-weight: 700; }
+    .record-type-embed { color: #16735d; background: #e8f7f2; }
+    .record-type-normal { color: #176c7a; background: #e8f7f9; }
+    .record-type-recover { color: var(--blue-deep); background: #edf3ff; }
+    .record-time { min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-faint); font-size: 9px; }
+    .record-title { display: block; min-width: 0; margin-top: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: 13px; line-height: 1.4; font-weight: 700; }
+    .record-watermark, .record-note { min-width: 0; display: flex; align-items: baseline; gap: 7px; margin-top: 6px; color: var(--ink-soft); font-size: 10px; }
+    .record-watermark span, .record-note span { flex: 0 0 auto; color: var(--ink-faint); font-size: 9px; }
+    .record-watermark b, .record-note b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .record-detail { grid-area: detail; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-content: center; gap: 12px 14px; padding-left: 16px; border-left: 1px solid #e8edf4; }
+    .record-fact { min-width: 0; }
+    .record-fact strong { display: block; color: var(--ink-faint); font-size: 9px; font-weight: 650; }
+    .record-fact em { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-soft); font-size: 10px; font-style: normal; line-height: 1.35; }
+    .record-actions { grid-area: actions; width: 176px; display: grid; grid-template-columns: 62px 70px 36px; gap: 4px; padding-left: 12px; border-left: 1px solid #e8edf4; }
+    .record-actions .galaxy-button { width: 100%; min-width: 0; min-height: 36px; padding: 0 7px; border: 1px solid #dbe4f1; color: var(--ink-soft); background: #fff; box-shadow: none; font-size: 10px; }
     .record-actions .galaxy-button:not(.danger):hover { border-color: #a9c2e8; color: var(--blue-deep); background: #f6f9ff; }
     .record-actions .galaxy-button .icon { flex: 0 0 auto; }
-    .record-actions .danger { width: 100%; }
+    .record-actions .danger { width: 36px; padding: 0; color: var(--rose); border-color: #f0ccd2; background: #fff7f8; }
 
-    @media (max-width: 1280px) {
-      .record-row { grid-template-columns: 160px minmax(220px, 1.05fr) minmax(255px, 1fr) 170px; gap: 15px; padding-left: 16px; padding-right: 16px; }
-      .record-images { width: 160px; }
-      .record-detail, .record-actions { padding-left: 14px; }
-    }
-    @media (max-width: 1200px) {
-      .record-row { grid-template-columns: 136px minmax(0, 1fr) 170px; min-height: 132px; }
+    @media (max-width: 1320px) {
+      .record-row { grid-template-columns: 24px 136px minmax(0, 1fr) 176px; grid-template-areas: "select images main actions" "select images detail actions"; gap: 10px 14px; }
       .record-images { width: 136px; }
-      .record-detail { grid-column: 2; grid-row: 2; padding-left: 0; border-left: 0; }
-      .record-actions { grid-column: 3; grid-row: 1 / span 2; padding-left: 14px; }
-    }
-    @media (max-width: 700px) {
-      .record-row { grid-template-columns: 112px minmax(0, 1fr) auto; min-height: 108px; padding: 12px 13px; }
-      .record-images { width: 112px; }
-      .record-detail { display: none; }
-      .record-actions { grid-column: 3; grid-row: 1; padding-left: 9px; border-left: 1px solid #e8edf4; }
-      .actions-heading { display: none; }
-      .actions-grid { grid-template-columns: 1fr; gap: 6px; }
-      .record-actions .galaxy-button { width: 34px; min-height: 32px; padding: 0; font-size: 0; }
-      .record-actions .danger { width: 34px; }
+      .record-thumb { height: 76px; }
+      .record-detail { padding: 9px 0 0; border-top: 1px solid #e8edf4; border-left: 0; }
+      .record-actions { align-self: stretch; align-content: center; }
     }
 
     /* Mobile workspace uses the full viewport and stacks record content cleanly. */
@@ -721,72 +667,84 @@
       .page-stack { height: 100%; min-height: 0; }
       .page-view.active { height: 100%; min-height: 0; }
       .workspace-card { height: 100%; min-height: 0; }
-      .galaxy-panel.gx-card.history-full { height: 100%; min-height: 0; }
+      .galaxy-panel.gx-card.history-full { height: 100%; min-height: 0; padding: 18px 16px; }
     }
 
     @media (max-width: 700px) {
-      .history-toolbar {
-        grid-template-columns: minmax(0, 1fr) 38px;
-        grid-template-areas: "search search" "filter refresh";
-        gap: 8px;
-        padding: 12px 0 11px;
-      }
+      .history-toolbar { grid-template-columns: minmax(0, 1fr) 38px; grid-template-areas: "search search" "filter refresh"; gap: 8px; padding: 12px 0 11px; }
       .history-toolbar .search-field { grid-area: search; }
       .history-toolbar .history-filter { grid-area: filter; width: 100%; }
       .history-toolbar .history-refresh { grid-area: refresh; }
-      .record-row {
-        grid-template-columns: 96px minmax(0, 1fr);
-        grid-template-rows: auto auto auto;
-        align-items: start;
-        min-height: 0;
-        padding: 14px;
-        gap: 12px 14px;
-      }
-      .record-images { grid-column: 1; grid-row: 1; width: 96px; gap: 6px; align-self: start; }
-      .record-thumb { height: auto; aspect-ratio: 1 / 1; }
-      .record-main { grid-column: 2; grid-row: 1; min-width: 0; padding: 1px 0 0; }
-      .record-title-line { align-items: flex-start; gap: 6px; }
-      .record-title { font-size: 12px; line-height: 1.35; }
-      .record-watermark { margin-top: 8px; font-size: 11px; line-height: 1.4; }
-      .record-time { margin-top: 6px; font-size: 9px; }
-      .record-detail {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
-        padding: 10px 0 0;
-        border-top: 1px solid #e8edf4;
-        border-left: 0;
-      }
-      .record-meta-item { padding: 7px 8px; border-radius: 7px; }
-      .record-meta-item strong { font-size: 8px; }
-      .record-meta-item em { font-size: 9px; line-height: 1.3; }
-      .record-actions {
-        grid-column: 1 / -1;
-        grid-row: 3;
-        display: block;
-        padding: 10px 0 0;
-        border-top: 1px solid #e8edf4;
-        border-left: 0;
-      }
-      .actions-heading { display: none; }
-      .actions-grid { grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); gap: 6px; }
-      .record-actions .galaxy-button,
-      .record-actions .danger { width: 100%; min-height: 34px; padding: 0 4px; font-size: 9px; }
-      .record-actions .galaxy-button .icon { width: 14px; height: 14px; }
+      .history-selection { flex-wrap: wrap; gap: 8px 14px; }
+      .history-batch-delete { min-height: 32px; }
+      .history-full .history-list { gap: 8px; padding-top: 10px; }
+      .record-row { min-height: 0; grid-template-columns: 24px 104px minmax(0, 1fr); grid-template-areas: "select images main" ". detail detail" ". actions actions"; gap: 10px 12px; padding: 12px; }
+      .record-images { width: 104px; gap: 5px; align-self: start; }
+      .record-thumb { height: 56px; }
+      .record-detail { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 10px; }
+      .record-actions { width: 100%; grid-template-columns: 72px 80px 38px; justify-content: end; padding: 10px 0 0; border-top: 1px solid #e8edf4; border-left: 0; }
+      .record-actions .danger { width: 38px; }
     }
 
     @media (max-width: 380px) {
-      .record-row { grid-template-columns: 88px minmax(0, 1fr); gap: 10px 12px; padding: 12px; }
+      .galaxy-panel.gx-card.history-full { padding-left: 12px; padding-right: 12px; }
+      .record-row { grid-template-columns: 22px 88px minmax(0, 1fr); gap: 9px 10px; padding: 10px; }
       .record-images { width: 88px; }
-      .record-actions .galaxy-button,
-      .record-actions .danger { font-size: 8px; }
+      .record-thumb { height: 48px; }
     }
 
     /* Image preview must sit above record and account dialogs. */
     .image-viewer { z-index: 160; }
     .image-viewer.open { z-index: 160; }
+
+    /* Extraction modes and crop/scale recovery workspace. */
+    .extract-mode-tabs { flex: 0 0 auto; display: flex; gap: 4px; width: min(360px, calc(100% - 44px)); margin: 14px 22px 0; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+    .extract-mode-tab { flex: 1; min-height: 34px; border-radius: 7px; color: var(--ink-soft); background: transparent; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .extract-mode-tab.active { color: var(--blue-deep); background: var(--surface); box-shadow: 0 2px 8px rgba(30,52,86,.09); }
+    .extract-mode-view { display: none; min-height: 0; flex: 1 1 auto; }
+    .extract-mode-view.active { display: flex; flex-direction: column; }
+    .recovery-scroll { min-height: 0; flex: 1 1 auto; overflow: auto; padding: 16px 22px 20px; }
+    .recovery-notice { padding: 11px 13px; border-left: 3px solid #d6962e; border-radius: 6px; color: #73541d; background: #fff8e9; font-size: 11px; line-height: 1.65; }
+    .recovery-notice strong { color: #573c0b; }
+    .recovery-history-picker { display: grid; grid-template-columns: minmax(0, 520px); gap: 6px; margin-top: 12px; }
+    .recovery-history-picker label { color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+    .recovery-history-picker .galaxy-input { min-height: 40px; font-size: 11px; }
+    .recovery-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+    .recovery-input { min-width: 0; display: grid; grid-template-rows: auto minmax(170px, 1fr); gap: 7px; }
+    .recovery-input > label, .recovery-control label { color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+    .recovery-drop { min-height: 170px; height: 100%; }
+    .recovery-drop .preview img { height: 108px; }
+    .recovery-controls { display: grid; grid-template-columns: minmax(160px, .7fr) minmax(260px, 1fr) minmax(180px, .75fr) minmax(150px, auto); gap: 12px; align-items: end; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .recovery-control { min-width: 0; display: grid; gap: 6px; }
+    .recovery-auto-params { min-height: 40px; display: flex; align-items: center; padding: 8px 10px; border: 1px solid #cfe2d9; border-radius: 9px; color: #39725e; background: #f2faf7; font-size: 10px; line-height: 1.4; }
+    .recovery-controls .galaxy-input { min-height: 40px; font-size: 11px; }
+    .recovery-controls .galaxy-button { width: 100%; min-height: 40px; }
+    .recovery-result { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .recovery-result.show { display: block; }
+    .recovery-result-layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr); gap: 15px; align-items: stretch; }
+    .recovered-preview { width: 100%; height: 210px; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; background: #eef2f7; cursor: zoom-in; }
+    .recovery-result-copy { min-width: 0; padding: 13px; border: 1px solid #bfe7da; border-radius: 10px; background: #f2fbf7; }
+    .recovery-result-copy.error { border-color: #f2c5cd; background: #fff7f8; }
+    .recovery-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
+    .recovery-metric { min-width: 0; padding: 7px 8px; border: 1px solid rgba(45,108,223,.12); border-radius: 7px; background: rgba(255,255,255,.72); }
+    .recovery-metric label { display: block; color: var(--ink-faint); font-size: 9px; }
+    .recovery-metric strong { display: block; margin-top: 3px; overflow-wrap: anywhere; color: var(--ink); font-size: 11px; }
+    .recovery-warning { margin-top: 9px; padding: 8px 10px; border-radius: 7px; color: #8a5f13; background: #fff5dc; font-size: 10px; }
+    .recovery-result-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+    .recovery-result-actions .galaxy-button { min-height: 34px; font-size: 10px; }
+    .recovery-actions { display: grid; grid-template-columns: auto minmax(130px, 1fr); gap: 8px; }
+    @media (max-width: 1080px) {
+      .recovery-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .extract-mode-tabs { width: calc(100% - 32px); margin-left: 16px; margin-right: 16px; }
+      .recovery-scroll { padding: 13px 16px 18px; }
+      .recovery-input-grid, .recovery-result-layout { grid-template-columns: 1fr; }
+      .recovery-controls { grid-template-columns: 1fr; }
+      .recovery-input { grid-template-rows: auto minmax(155px, auto); }
+      .recovered-preview { height: 190px; }
+      .upload-clear { top: 35px; right: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -814,8 +772,8 @@
     <div class="modal-card auth-card">
       <div class="modal-body">
         <div class="auth-brand"><img class="brand-mark brand-logo" src="/static/logo.svg" alt=""><div><div class="brand-name">隐形水印</div><div class="brand-sub">Invisible Watermark</div></div></div>
-        <div class="modal-head" style="padding:22px 0 15px;border-bottom:0"><div><h2 id="authTitle">登录工作台</h2><p id="authSubtitle">使用本地账户继续</p></div></div>
-        <form class="auth-form" id="loginForm">
+        <div class="modal-head" style="padding:22px 0 15px;border-bottom:0"><div><h2 id="authTitle">正在检查账户</h2><p id="authSubtitle">请稍候</p></div></div>
+        <form class="auth-form" id="loginForm" style="display:none">
           <div class="field"><label for="loginUsername">用户名称</label><input class="galaxy-input" id="loginUsername" autocomplete="username" required></div>
           <div class="field"><label for="loginPassword">密码</label><input class="galaxy-input" id="loginPassword" type="password" autocomplete="current-password" required></div>
           <div class="form-error" id="loginError" aria-live="polite"></div>
@@ -827,7 +785,6 @@
           <div class="form-error" id="registerError" aria-live="polite"></div>
           <button class="galaxy-button primary" type="submit"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>创建本地账户</button>
         </form>
-        <button class="galaxy-button ghost" id="authSwitch" type="button" style="display:none;width:100%;margin-top:10px">返回登录</button>
       </div>
     </div>
   </section>
@@ -852,23 +809,47 @@
                   <div class="flow-arrow" id="embedFlow"><span class="flow-dot"><svg class="icon"><use href="#i-chevron"></use></svg></span></div>
                   <div class="image-stage result-stage"><div class="stage-label"><span>02</span><strong>处理结果</strong><small>生成带水印的 PNG</small></div><div class="result-placeholder" id="resultEmptyE"><div class="placeholder-icon"><svg class="icon"><use href="#i-image"></use></svg></div><strong>等待处理结果</strong><span>完成嵌入后图片会显示在这里</span></div><div class="result" id="resE"><div class="result-head"><span class="result-label">处理完成</span><svg class="icon icon-sm"><use href="#i-check"></use></svg></div><div class="result-body" id="resEC"></div></div></div>
                 </div>
-                <div class="control-bar"><div class="control-fields"><div class="field"><label>水印文字 <span class="required">*</span></label><input class="galaxy-input gx-input" id="wmT" type="text" value="© 苏苏 2026" placeholder="例如：© 苏苏 2026"></div><div class="input-row"><div class="field"><label>图片密码</label><input class="galaxy-input gx-input" id="ePi" type="text" inputmode="numeric" value="1234"><span class="password-help">控制图像排列，提取时须一致</span></div><div class="field"><label>水印密码</label><input class="galaxy-input gx-input" id="ePw" type="text" inputmode="numeric" value="1234"><span class="password-help">控制水印编码，提取时须一致</span></div></div><div class="field field-note"><label>备注</label><input class="galaxy-input gx-input" id="eNote" type="text" maxlength="500" placeholder="例如：客户合同首页"></div></div><div class="control-action"><span class="secure-note"><svg class="icon icon-sm"><use href="#i-lock"></use></svg>本地处理</span><button class="galaxy-button primary gx-btn gx-btn--primary" id="btnE"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>开始嵌入</button></div></div>
+                <div class="control-bar"><div class="control-fields"><div class="field"><label>水印文字 <span class="required">*</span></label><input class="galaxy-input gx-input" id="wmT" type="text" value="© 苏苏 2026" placeholder="例如：© 苏苏 2026"></div><div class="password-field"><label for="ePassword">图片和水印密码</label><input class="galaxy-input gx-input" id="ePassword" type="text" inputmode="numeric" value="1234"><label class="split-password-option"><input id="eSplitToggle" type="checkbox">分别填写（兼容旧记录）</label><div class="split-password-fields" id="eSplitFields" hidden><input class="galaxy-input gx-input" id="ePi" type="text" inputmode="numeric" value="1234" aria-label="图片密码" placeholder="图片密码"><input class="galaxy-input gx-input" id="ePw" type="text" inputmode="numeric" value="1234" aria-label="水印密码" placeholder="水印密码"></div></div><div class="field field-note"><label>备注</label><input class="galaxy-input gx-input" id="eNote" type="text" maxlength="500" placeholder="例如：客户合同首页"></div></div><div class="control-action"><span class="secure-note"><svg class="icon icon-sm"><use href="#i-lock"></use></svg>本地处理</span><div class="action-buttons"><button class="galaxy-button ghost" id="clearE" type="button"><svg class="icon icon-sm"><use href="#i-close"></use></svg>清空本次</button><button class="galaxy-button primary gx-btn gx-btn--primary" id="btnE"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>开始嵌入</button></div></div></div>
               </div>
             </section>
 
             <section class="page-view" data-page="extract">
               <div class="galaxy-panel gx-card workspace-card">
                 <div class="panel-head"><div><h2 class="panel-title">提取水印</h2><p class="panel-desc">上传带水印的图片，识别隐藏文字。</p></div><span class="panel-kicker">02 / EXTRACT</span></div>
+                <div class="extract-mode-tabs" role="tablist" aria-label="提取模式"><button class="extract-mode-tab active" id="normalExtractTab" type="button" data-extract-mode="normal">普通提取</button><button class="extract-mode-tab" id="recoverExtractTab" type="button" data-extract-mode="recover">恢复提取</button></div>
+                <div class="extract-mode-view active" id="normalExtractView">
                 <div class="image-flow">
                   <div class="image-stage"><div class="stage-label"><span>01</span><strong>待验证图片</strong><small>上传需要识别的文件</small></div><label class="galaxy-drop galaxy-drop-large" id="fuX"><input id="inpX" type="file" accept="image/*"><span class="drop-inner"><span class="drop-icon"><svg class="icon"><use href="#i-upload"></use></svg></span><span class="drop-title">上传带水印的图片</span><span class="drop-subtitle">或 <em>点击选择文件</em><br>支持 PNG / JPG</span></span><span class="preview" id="fpX"><img id="prX" alt="图片预览"><span class="file-name" id="fnX"></span></span></label></div>
                   <div class="flow-arrow" id="extractFlow"><span class="flow-dot"><svg class="icon"><use href="#i-chevron"></use></svg></span></div>
                   <div class="image-stage result-stage"><div class="stage-label"><span>02</span><strong>识别文字</strong><small>从像素中还原内容</small></div><div class="result-placeholder" id="resultEmptyX"><div class="placeholder-icon"><svg class="icon"><use href="#i-extract"></use></svg></div><strong>等待识别结果</strong><span>完成提取后文字会显示在这里</span></div><div class="result" id="resX"><div class="result-head"><span class="result-label">提取完成</span><svg class="icon icon-sm"><use href="#i-check"></use></svg></div><div class="result-body" id="resXC"></div></div></div>
                 </div>
-                <div class="control-bar"><div class="control-fields"><div class="field"><label>水印长度 <span class="required">*</span></label><input class="galaxy-input gx-input" id="wmS" type="number" min="1" placeholder="输入嵌入时返回的 wm_shape"></div><div class="input-row"><div class="field"><label>图片密码</label><input class="galaxy-input gx-input" id="xPi" type="text" inputmode="numeric" value="1234"><span class="password-help">匹配嵌入时的图像排列密码</span></div><div class="field"><label>水印密码</label><input class="galaxy-input gx-input" id="xPw" type="text" inputmode="numeric" value="1234"><span class="password-help">匹配嵌入时的水印编码密码</span></div></div><div class="field field-note"><label>备注</label><input class="galaxy-input gx-input" id="xNote" type="text" maxlength="500" placeholder="例如：来源或用途"></div></div><div class="control-action"><span class="secure-note"><svg class="icon icon-sm"><use href="#i-lock"></use></svg>只读取不改图</span><button class="galaxy-button primary gx-btn gx-btn--primary" id="btnX"><svg class="icon icon-sm"><use href="#i-extract"></use></svg>开始提取</button></div></div>
+                <div class="control-bar"><div class="control-fields"><div class="field"><label>水印长度 <span class="required">*</span></label><input class="galaxy-input gx-input" id="wmS" type="number" min="1" placeholder="输入嵌入时返回的 wm_shape"></div><div class="password-field"><label for="xPassword">图片和水印密码</label><input class="galaxy-input gx-input" id="xPassword" type="text" inputmode="numeric" value="1234"><label class="split-password-option"><input id="xSplitToggle" type="checkbox">分别填写（兼容旧记录）</label><div class="split-password-fields" id="xSplitFields" hidden><input class="galaxy-input gx-input" id="xPi" type="text" inputmode="numeric" value="1234" aria-label="图片密码" placeholder="图片密码"><input class="galaxy-input gx-input" id="xPw" type="text" inputmode="numeric" value="1234" aria-label="水印密码" placeholder="水印密码"></div></div><div class="field field-note"><label>备注</label><input class="galaxy-input gx-input" id="xNote" type="text" maxlength="500" placeholder="例如：来源或用途"></div></div><div class="control-action"><span class="secure-note"><svg class="icon icon-sm"><use href="#i-lock"></use></svg>只读取不改图</span><div class="action-buttons"><button class="galaxy-button ghost" id="clearX" type="button"><svg class="icon icon-sm"><use href="#i-close"></use></svg>清空本次</button><button class="galaxy-button primary gx-btn gx-btn--primary" id="btnX"><svg class="icon icon-sm"><use href="#i-extract"></use></svg>开始提取</button></div></div></div>
+                </div>
+                <div class="extract-mode-view" id="recoverExtractView">
+                  <div class="recovery-scroll">
+                    <div class="recovery-notice"><strong>参考图说明：</strong>完整水印参考图是当初嵌入水印后生成的完整图片，不是未添加水印的原始图片。第一版仅支持裁剪和缩放恢复；旋转、加边框、真实手机拍照和透视变形暂不保证支持。</div>
+                    <div class="recovery-history-picker" id="historyReferencePicker"><label for="recoverHistoryRecord">从历史嵌入记录选择参考图（推荐）</label><select class="galaxy-input" id="recoverHistoryRecord"><option value="">正在加载嵌入记录…</option></select></div>
+                    <div class="recovery-input-grid">
+                      <div class="recovery-input">
+                        <label>完整水印参考图 <span class="required">*</span></label>
+                        <label class="galaxy-drop recovery-drop" id="fuRR"><input id="inpRR" type="file" accept="image/*"><span class="drop-inner"><span class="drop-icon"><svg class="icon"><use href="#i-upload"></use></svg></span><span class="drop-title">上传完整水印参考图</span><span class="drop-subtitle">选择上方历史记录，或点击 / 拖拽图片到这里</span></span><span class="preview" id="fpRR"><img id="prRR" alt="完整水印参考图预览"><span class="file-name" id="fnRR"></span></span></label>
+                      </div>
+                      <div class="recovery-input"><label>待提取图片 <span class="required">*</span></label><label class="galaxy-drop recovery-drop" id="fuRT"><input id="inpRT" type="file" accept="image/*"><span class="drop-inner"><span class="drop-icon"><svg class="icon"><use href="#i-upload"></use></svg></span><span class="drop-title">上传裁剪或缩放后的图片</span><span class="drop-subtitle">图片尺寸不得大于参考图</span></span><span class="preview" id="fpRT"><img id="prRT" alt="待提取图片预览"><span class="file-name" id="fnRT"></span></span></label></div>
+                    </div>
+                    <div class="recovery-controls">
+                      <div class="recovery-control" id="recoveryShapeControl"><label for="rWmS">水印长度 wm_shape <span class="required">*</span></label><input class="galaxy-input" id="rWmS" type="number" min="1" placeholder="嵌入时返回的值"></div>
+                      <div class="password-field" id="recoveryPasswordControl"><label for="rPassword">图片和水印密码</label><input class="galaxy-input" id="rPassword" type="text" inputmode="numeric" value="1234"><label class="split-password-option"><input id="rSplitToggle" type="checkbox">分别填写（兼容旧记录）</label><div class="split-password-fields" id="rSplitFields" hidden><input class="galaxy-input" id="rPi" type="text" inputmode="numeric" value="1234" aria-label="图片密码" placeholder="图片密码"><input class="galaxy-input" id="rPw" type="text" inputmode="numeric" value="1234" aria-label="水印密码" placeholder="水印密码"></div></div>
+                      <div class="recovery-auto-params" id="recoveryAutoParams" hidden>已从所选嵌入记录自动读取 wm_shape、图片密码和水印密码。</div>
+                      <div class="recovery-control"><label for="rNote">备注</label><input class="galaxy-input" id="rNote" type="text" maxlength="500" placeholder="例如：裁剪版验证"></div>
+                      <div class="recovery-control"><label>&nbsp;</label><div class="recovery-actions"><button class="galaxy-button ghost" id="clearR" type="button"><svg class="icon icon-sm"><use href="#i-close"></use></svg>清空</button><button class="galaxy-button primary" id="btnR" type="button"><svg class="icon icon-sm"><use href="#i-extract"></use></svg>恢复并提取</button></div></div>
+                    </div>
+                    <div class="recovery-result" id="resR" aria-live="polite"></div>
+                  </div>
+                </div>
               </div>
             </section>
 
-            <section class="page-view" data-page="history"><div class="galaxy-panel gx-card history-full"><div class="history-head"><div><h2>处理记录</h2><p>图片、参数和备注保存在本机数据库。</p></div><span id="historyCount">0 条</span></div><div class="history-toolbar"><label class="search-field"><svg class="icon"><use href="#i-search"></use></svg><input class="galaxy-input" id="historySearch" type="search" placeholder="搜索文件名、备注、水印或 wm_shape"></label><select class="history-filter" id="historyOperation"><option value="">全部操作</option><option value="embed">嵌入水印</option><option value="extract">提取水印</option></select><button class="galaxy-button history-refresh" id="historyRefresh" type="button" title="刷新记录" aria-label="刷新记录"><svg class="icon icon-sm"><use href="#i-refresh"></use></svg></button></div><div class="history-list" id="hC"></div></div></section>
+            <section class="page-view" data-page="history"><div class="galaxy-panel gx-card history-full"><div class="history-head"><div><h2>处理记录</h2><p>图片、参数和备注保存在本机数据库。</p></div><span id="historyCount">0 条</span></div><div class="history-toolbar"><label class="search-field"><svg class="icon"><use href="#i-search"></use></svg><input class="galaxy-input" id="historySearch" type="search" placeholder="搜索文件名、备注、水印或 wm_shape"></label><select class="history-filter" id="historyOperation"><option value="">全部操作</option><option value="embed">嵌入水印</option><option value="extract">提取水印</option></select><button class="galaxy-button history-refresh" id="historyRefresh" type="button" title="刷新记录" aria-label="刷新记录"><svg class="icon icon-sm"><use href="#i-refresh"></use></svg></button></div><div class="history-selection"><label class="history-select-all" for="selectAllRecords"><input id="selectAllRecords" type="checkbox" disabled><span>全选当前列表</span></label><span class="history-selected-count" id="selectedRecordCount">未选择记录</span><button class="galaxy-button history-batch-delete" id="batchDeleteRecords" type="button" disabled><svg class="icon icon-sm"><use href="#i-trash"></use></svg>批量删除</button></div><div class="history-list" id="hC"></div></div></section>
           </div>
         </section>
       </div>
@@ -924,24 +905,101 @@
       document.querySelectorAll('[data-tab]').forEach(el => el.addEventListener('click', () => switchTab(el.dataset.tab)));
       function formatBytes(bytes) { if (!Number.isFinite(bytes) || bytes <= 0) return '—'; if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`; return `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
       function updateImageInfo(prefix, src, fileName, bytes, format) { const name = document.getElementById('resultName' + prefix), type = document.getElementById('resultFormat' + prefix), size = document.getElementById('resultSize' + prefix), dimensions = document.getElementById('resultDimensions' + prefix); if (name) name.textContent = fileName || '处理结果'; if (type) type.textContent = format || '图片'; if (size) size.textContent = formatBytes(bytes); if (src && dimensions) { const probe = new Image(); probe.onload = () => { dimensions.textContent = `${probe.naturalWidth} × ${probe.naturalHeight}`; }; probe.src = src; } }
-      function wireUpload(prefix) { const drop = document.getElementById('fu' + prefix), input = document.getElementById('inp' + prefix), preview = document.getElementById('fp' + prefix), image = document.getElementById('pr' + prefix), name = document.getElementById('fn' + prefix); const update = (file) => { if (!file || !file.type.startsWith('image/')) return; drop.classList.add('has-file'); preview.classList.add('show'); name.textContent = file.name; const flow = drop.closest('.image-flow'); const result = document.getElementById('res' + prefix); const empty = document.getElementById('resultEmpty' + prefix); const resultImage = document.getElementById('resultImage' + prefix); if (flow) flow.classList.remove('is-split', 'is-processing', 'is-revealed'); if (result) result.classList.remove('show', 'error'); if (resultImage) { resultImage.classList.remove('is-visible'); resultImage.removeAttribute('src'); } if (empty) empty.style.display = 'flex'; const reader = new FileReader(); reader.onload = e => { image.src = e.target.result; if (prefix === 'E') window.lastOrigDataUrl = e.target.result; }; reader.readAsDataURL(file); }; input.addEventListener('change', () => update(input.files[0])); drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragging'); }); drop.addEventListener('dragleave', () => drop.classList.remove('dragging')); drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragging'); const file = e.dataTransfer.files[0]; if (file) { input.files = e.dataTransfer.files; update(file); } }); }
-      wireUpload('E'); wireUpload('X');
+      function resetStandardResult(prefix) {
+        const result = document.getElementById('res' + prefix);
+        const body = document.getElementById('res' + prefix + 'C');
+        const empty = document.getElementById('resultEmpty' + prefix);
+        const resultImage = document.getElementById('resultImage' + prefix);
+        const flow = document.getElementById('fu' + prefix)?.closest('.image-flow');
+        if (result) result.classList.remove('show', 'error');
+        if (body) body.innerHTML = '';
+        if (empty) empty.style.display = 'flex';
+        if (resultImage) { resultImage.classList.remove('is-visible'); resultImage.removeAttribute('src'); }
+        if (flow) flow.classList.remove('is-split', 'is-processing', 'is-revealed');
+      }
+      function resetRecoveryResult() { const result = document.getElementById('resR'); result.classList.remove('show'); result.innerHTML = ''; }
+      const uploadControls = {};
+      function clearUpload(prefix, announce = true) {
+        const drop = document.getElementById('fu' + prefix);
+        const input = document.getElementById('inp' + prefix);
+        const preview = document.getElementById('fp' + prefix);
+        const image = document.getElementById('pr' + prefix);
+        const name = document.getElementById('fn' + prefix);
+        const clearButton = document.getElementById('clearUpload' + prefix);
+        input.value = '';
+        drop.classList.remove('has-file', 'dragging');
+        preview.classList.remove('show');
+        image.removeAttribute('src');
+        name.textContent = '';
+        clearButton?.classList.remove('show');
+        if (prefix === 'RR') {
+          document.getElementById('recoverHistoryRecord').value = '';
+          applyRecoverySource('manual');
+        }
+        if (prefix === 'E' || prefix === 'X') resetStandardResult(prefix); else resetRecoveryResult();
+        if (announce) toast('图片已清除，可以重新上传');
+      }
+      function wireUpload(prefix) {
+        const drop = document.getElementById('fu' + prefix), input = document.getElementById('inp' + prefix), preview = document.getElementById('fp' + prefix), image = document.getElementById('pr' + prefix), name = document.getElementById('fn' + prefix);
+        const owner = drop.parentElement;
+        owner.classList.add('upload-owner');
+        const clearButton = document.createElement('button');
+        clearButton.id = 'clearUpload' + prefix;
+        clearButton.className = 'upload-clear';
+        clearButton.type = 'button';
+        clearButton.title = '清除已上传图片';
+        clearButton.setAttribute('aria-label', '清除已上传图片');
+        clearButton.innerHTML = '<svg class="icon"><use href="#i-close"></use></svg>';
+        owner.appendChild(clearButton);
+        clearButton.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); clearUpload(prefix); });
+        const showPreview = (src, fileName) => {
+          drop.classList.add('has-file');
+          preview.classList.add('show');
+          clearButton.classList.add('show');
+          image.src = src;
+          name.textContent = fileName;
+        };
+        const clearPreview = () => {
+          input.value = '';
+          drop.classList.remove('has-file', 'dragging');
+          preview.classList.remove('show');
+          image.removeAttribute('src');
+          name.textContent = '';
+          clearButton.classList.remove('show');
+        };
+        uploadControls[prefix] = { showPreview, clearPreview };
+        const update = (file) => {
+          if (!file || !file.type.startsWith('image/')) { toast('请选择有效的图片文件'); return; }
+          if (prefix === 'RR') {
+            document.getElementById('recoverHistoryRecord').value = '';
+            applyRecoverySource('manual');
+          }
+          if (prefix === 'E' || prefix === 'X') resetStandardResult(prefix); else resetRecoveryResult();
+          const reader = new FileReader();
+          reader.onload = event => { showPreview(event.target.result, file.name); if (prefix === 'E') window.lastOrigDataUrl = event.target.result; };
+          reader.readAsDataURL(file);
+        };
+        input.addEventListener('change', () => update(input.files[0]));
+        drop.addEventListener('dragover', event => { event.preventDefault(); drop.classList.add('dragging'); });
+        drop.addEventListener('dragleave', () => drop.classList.remove('dragging'));
+        drop.addEventListener('drop', event => { event.preventDefault(); drop.classList.remove('dragging'); const file = event.dataTransfer.files[0]; if (file) { input.files = event.dataTransfer.files; update(file); } });
+      }
+      wireUpload('E'); wireUpload('X'); wireUpload('RR'); wireUpload('RT');
       const viewer = document.getElementById('imageViewer'), viewerImage = document.getElementById('viewerImage'), viewerName = document.getElementById('viewerName'), viewerDownload = document.getElementById('viewerDownload');
       const openViewer = (src, name) => { if (!src) return; viewerImage.src = src; viewerName.textContent = name || '图片预览'; viewerDownload.href = src; viewerDownload.download = name || 'preview.png'; viewer.classList.add('open'); };
       const closeViewer = () => { viewer.classList.remove('open'); viewerImage.removeAttribute('src'); };
       document.getElementById('viewerClose').addEventListener('click', closeViewer); viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); }); document.addEventListener('keydown', e => { if (e.key === 'Escape') closeViewer(); });
-      ['E', 'X'].forEach(prefix => { const drop = document.getElementById('fu' + prefix), image = document.getElementById('pr' + prefix); drop.addEventListener('click', e => { if (drop.classList.contains('has-file') && e.target !== drop.querySelector('input')) { e.preventDefault(); openViewer(image.src, document.getElementById('fn' + prefix).textContent); } }); });
+      ['E', 'X', 'RR', 'RT'].forEach(prefix => { const drop = document.getElementById('fu' + prefix), image = document.getElementById('pr' + prefix); drop.addEventListener('click', e => { if (prefix !== 'RR' && drop.classList.contains('has-file') && e.target !== drop.querySelector('input')) { e.preventDefault(); openViewer(image.src, document.getElementById('fn' + prefix).textContent); } }); });
       document.addEventListener('click', e => { const image = e.target.closest('.result-image.is-visible'); if (image) openViewer(image.src, image.id === 'resultImageX' ? '水印内容.svg' : '处理结果.png'); });
       function setupResult(prefix) { const result = document.getElementById('res' + prefix); if (!result) return; const stage = result.closest('.result-stage'); const card = result.closest('.workspace-card'); const bar = card?.querySelector('.control-bar'); if (!stage || !bar) return; const image = document.createElement('img'); image.id = 'resultImage' + prefix; image.className = 'result-image'; image.alt = prefix === 'E' ? '处理结果' : '水印内容'; stage.appendChild(image); result.classList.add('result-strip'); const body = result.querySelector('.result-body'); new MutationObserver(() => { const generated = body.querySelector('.result-img'); if (generated) { image.src = generated.src; image.classList.add('is-visible'); const empty = document.getElementById('resultEmpty' + prefix); if (empty) empty.style.display = 'none'; generated.remove(); } }).observe(body, { childList: true, subtree: true }); bar.before(result); }
       setupResult('E'); setupResult('X');
       const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      const state = { user: null, records: [], detail: null, historyRequest: 0 };
+      const state = { user: null, records: [], embedRecords: [], detail: null, historyRequest: 0, recoverySource: 'manual', selectedRecordIds: new Set() };
       let registrationAvailable = false;
       window.switchTab(initialTab, { updateUrl: false });
       const authScreen = document.getElementById('authScreen');
       const loginForm = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
-      const authSwitch = document.getElementById('authSwitch');
       const accountModal = document.getElementById('accountModal');
       const recordModal = document.getElementById('recordModal');
       const historyContainer = document.getElementById('hC');
@@ -966,19 +1024,101 @@
         return payload;
       }
 
-      function setAuthMode(register) {
-        const showRegister = Boolean(register && registrationAvailable);
+      function setAuthMode() {
+        const showRegister = registrationAvailable;
         loginForm.style.display = showRegister ? 'none' : 'grid';
         registerForm.style.display = showRegister ? 'grid' : 'none';
         document.getElementById('authTitle').textContent = showRegister ? '初始化本地账户' : '登录工作台';
         document.getElementById('authSubtitle').textContent = showRegister ? '首次使用请创建一个本地账户' : '使用本地账户继续';
-        authSwitch.style.display = registrationAvailable ? 'inline-flex' : 'none';
-        authSwitch.textContent = showRegister ? '已有账户？返回登录' : '首次使用？初始化注册';
         document.getElementById('loginError').textContent = '';
         document.getElementById('registerError').textContent = '';
       }
-      function showAuth(message = '', register = false) { const showRegister = Boolean(register && registrationAvailable); document.body.classList.add('auth-locked'); authScreen.classList.add('open'); setAuthMode(showRegister); if (message) document.getElementById(showRegister ? 'registerError' : 'loginError').textContent = message; }
+      function showAuth(message = '') { const showRegister = registrationAvailable; document.body.classList.add('auth-locked'); authScreen.classList.add('open'); setAuthMode(); if (message) document.getElementById(showRegister ? 'registerError' : 'loginError').textContent = message; }
       function hideAuth(user) { state.user = user; document.body.classList.remove('auth-locked'); authScreen.classList.remove('open'); const avatar = document.getElementById('accountBtn'); if (avatar && user) avatar.textContent = String(user.username || 'WM').slice(0, 2).toUpperCase(); }
+
+      function setSplitPasswordMode(scope, split) {
+        const toggle = document.getElementById(scope + 'SplitToggle');
+        const common = document.getElementById(scope + 'Password');
+        const fields = document.getElementById(scope + 'SplitFields');
+        toggle.checked = Boolean(split);
+        common.hidden = Boolean(split);
+        fields.hidden = !split;
+      }
+      function setPasswordValues(scope, pwdImg, pwdWm) {
+        const imagePassword = String(pwdImg || '1234');
+        const watermarkPassword = String(pwdWm || '1234');
+        document.getElementById(scope + 'Pi').value = imagePassword;
+        document.getElementById(scope + 'Pw').value = watermarkPassword;
+        document.getElementById(scope + 'Password').value = imagePassword === watermarkPassword ? imagePassword : '1234';
+        setSplitPasswordMode(scope, imagePassword !== watermarkPassword);
+      }
+      function passwordValues(scope) {
+        if (document.getElementById(scope + 'SplitToggle').checked) {
+          return {
+            pwdImg: document.getElementById(scope + 'Pi').value || '1234',
+            pwdWm: document.getElementById(scope + 'Pw').value || '1234',
+          };
+        }
+        const password = document.getElementById(scope + 'Password').value || '1234';
+        return { pwdImg: password, pwdWm: password };
+      }
+      ['e', 'x', 'r'].forEach(scope => document.getElementById(scope + 'SplitToggle').addEventListener('change', event => {
+        if (event.target.checked) {
+          const common = document.getElementById(scope + 'Password').value || '1234';
+          document.getElementById(scope + 'Pi').value = common;
+          document.getElementById(scope + 'Pw').value = common;
+        }
+        setSplitPasswordMode(scope, event.target.checked);
+      }));
+
+      function setExtractMode(mode, options = {}) {
+        const nextMode = mode === 'recover' ? 'recover' : 'normal';
+        document.querySelectorAll('[data-extract-mode]').forEach(button => button.classList.toggle('active', button.dataset.extractMode === nextMode));
+        document.getElementById('normalExtractView').classList.toggle('active', nextMode === 'normal');
+        document.getElementById('recoverExtractView').classList.toggle('active', nextMode === 'recover');
+        if (nextMode === 'recover' && state.user && options.loadReferences !== false) loadEmbedReferences();
+      }
+      document.querySelectorAll('[data-extract-mode]').forEach(button => button.addEventListener('click', () => setExtractMode(button.dataset.extractMode)));
+
+      function applyRecoverySource(source) {
+        state.recoverySource = source === 'history' ? 'history' : 'manual';
+        document.getElementById('recoveryShapeControl').hidden = state.recoverySource === 'history';
+        document.getElementById('recoveryPasswordControl').hidden = state.recoverySource === 'history';
+        document.getElementById('recoveryAutoParams').hidden = state.recoverySource !== 'history';
+      }
+
+      function applySelectedRecoveryReference() {
+        const select = document.getElementById('recoverHistoryRecord');
+        const item = state.embedRecords.find(record => record.id === Number(select.value));
+        if (!item) {
+          applyRecoverySource('manual');
+          if (!document.getElementById('inpRR').files[0]) uploadControls.RR.clearPreview();
+          resetRecoveryResult();
+          return;
+        }
+        document.getElementById('inpRR').value = '';
+        applyRecoverySource('history');
+        uploadControls.RR.showPreview(item.result_url, item.result_name || item.original_name);
+        resetRecoveryResult();
+      }
+
+      async function loadEmbedReferences(preferredId = null) {
+        if (!state.user) return;
+        const select = document.getElementById('recoverHistoryRecord');
+        const previous = preferredId !== null ? Number(preferredId) : Number(select.value) || null;
+        try {
+          const payload = await requestJson('/api/records?operation=embed');
+          state.embedRecords = payload.records || [];
+          const blankLabel = state.embedRecords.length ? '不使用历史记录，直接上传参考图' : '暂无嵌入记录，可直接上传参考图';
+          select.innerHTML = `<option value="">${blankLabel}</option>${state.embedRecords.map(item => `<option value="${item.id}">${escapeHtml(item.result_name || item.original_name)} · wm_shape ${item.wm_shape ?? '—'}</option>`).join('')}`;
+          if (previous && state.embedRecords.some(item => item.id === Number(previous))) select.value = String(previous);
+          else select.value = '';
+          applySelectedRecoveryReference();
+        } catch (error) {
+          if (!error.auth) toast(error.message);
+        }
+      }
+      document.getElementById('recoverHistoryRecord').addEventListener('change', applySelectedRecoveryReference);
 
       function updateStats(records) {
         const list = records || [];
@@ -993,32 +1133,77 @@
       }
       const recordTime = (value) => { const date = value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'; };
       const recordDimension = (width, height) => width && height ? `${width} × ${height}` : '读取中';
-      const recordThumb = (url, label) => url ? `<div class="record-thumb"><img src="${url}" alt="${label}" loading="lazy"><span>${label}</span></div>` : '<div class="record-thumb empty"><svg class="icon icon-sm"><use href="#i-image"></use></svg></div>';
+      const cleanRecordNote = (note, isRecovery) => {
+        const value = String(note || '').trim();
+        const prefix = '恢复提取；score=';
+        const scaleMarker = '；scale=';
+        if (!isRecovery || !value.startsWith(prefix)) return value;
+        const scaleIndex = value.indexOf(scaleMarker);
+        if (scaleIndex < 0) return value;
+        const userNoteIndex = value.indexOf('；', scaleIndex + scaleMarker.length);
+        return userNoteIndex < 0 ? '' : value.slice(userNoteIndex + 1).trim();
+      };
+      const recordThumb = (url, label) => url ? `<button class="record-thumb" type="button" data-record-preview="${escapeHtml(url)}" data-preview-name="${escapeHtml(label)}" aria-label="预览${escapeHtml(label)}"><img src="${escapeHtml(url)}" alt="" loading="lazy"><span>${escapeHtml(label)}</span></button>` : '<div class="record-thumb empty"><svg class="icon icon-sm"><use href="#i-image"></use></svg></div>';
+      function updateRecordSelectionUi() {
+        const visibleIds = state.records.map(item => Number(item.id));
+        const visibleSet = new Set(visibleIds);
+        [...state.selectedRecordIds].forEach(id => { if (!visibleSet.has(id)) state.selectedRecordIds.delete(id); });
+        const selectedCount = state.selectedRecordIds.size;
+        const selectAll = document.getElementById('selectAllRecords');
+        selectAll.disabled = visibleIds.length === 0;
+        selectAll.checked = visibleIds.length > 0 && selectedCount === visibleIds.length;
+        selectAll.indeterminate = selectedCount > 0 && selectedCount < visibleIds.length;
+        document.getElementById('selectedRecordCount').textContent = selectedCount ? `已选 ${selectedCount} 条` : '未选择记录';
+        document.getElementById('batchDeleteRecords').disabled = selectedCount === 0;
+        historyContainer.querySelectorAll('[data-record-select]').forEach(checkbox => {
+          const selected = state.selectedRecordIds.has(Number(checkbox.value));
+          checkbox.checked = selected;
+          checkbox.closest('.record-row')?.classList.toggle('is-selected', selected);
+        });
+      }
       function renderHistory(records = state.records) {
-        if (!records.length) { historyContainer.innerHTML = '<div class="history-empty"><svg class="icon"><use href="#i-history"></use></svg><div>还没有处理记录</div><span>完成一次嵌入或提取后，记录会保存在这里</span></div>'; return; }
-        historyContainer.innerHTML = records.map(item => `<article class="record-row">
-          <div class="record-images">${recordThumb(item.original_url, '原图')}${recordThumb(item.result_url, item.operation === 'extract' ? '水印内容' : '结果')}</div>
+        if (!records.length) { historyContainer.innerHTML = '<div class="history-empty"><svg class="icon"><use href="#i-history"></use></svg><div>还没有处理记录</div><span>完成一次嵌入或提取后，记录会保存在这里</span></div>'; updateRecordSelectionUi(); return; }
+        historyContainer.innerHTML = records.map(item => {
+          const isRecovery = item.operation === 'extract' && item.extract_mode === 'recover';
+          const previewUrl = isRecovery ? item.recovered_url : item.result_url;
+          const previewLabel = isRecovery ? '恢复图' : item.operation === 'extract' ? '水印内容' : '结果';
+          const previewSize = isRecovery ? item.recovered_size : item.result_size;
+          const previewWidth = isRecovery ? item.recovered_width : item.result_width;
+          const previewHeight = isRecovery ? item.recovered_height : item.result_height;
+          const typeClass = item.operation === 'embed' ? 'embed' : isRecovery ? 'recover' : 'normal';
+          const inputLabel = isRecovery ? '待提取图' : '原图';
+          const note = cleanRecordNote(item.note, isRecovery);
+          const score = Number(item.recover_score);
+          const scale = Number(item.recover_scale);
+          const facts = [
+            ['wm_shape', item.wm_shape ?? '—'],
+            [inputLabel, `${recordDimension(item.original_width, item.original_height)} · ${formatBytes(item.original_size)}`],
+            [previewLabel, previewUrl ? `${recordDimension(previewWidth, previewHeight)} · ${formatBytes(previewSize)}` : '—'],
+          ];
+          if (isRecovery) {
+            facts.push(['匹配度', Number.isFinite(score) ? `${(score * 100).toFixed(1)}%` : '—']);
+            facts.push(['缩放', Number.isFinite(scale) ? `${scale.toFixed(3)}×` : '—']);
+          }
+          const primaryDownloadUrl = isRecovery ? (item.recovered_url || item.result_url) : (item.result_url || item.original_url);
+          const primaryDownloadLabel = isRecovery && item.recovered_url ? '恢复图' : item.operation === 'embed' ? '结果图' : item.result_url ? '水印内容' : '原图';
+          return `<article class="record-row">
+          <label class="record-select-wrap" title="选择此记录"><input type="checkbox" value="${item.id}" data-record-select aria-label="选择记录 ${escapeHtml(item.original_name)}"></label>
+          <div class="record-images">${recordThumb(item.original_url, isRecovery ? '待提取' : '原图')}${recordThumb(previewUrl, previewLabel)}</div>
           <div class="record-main">
-            <div class="record-title-line"><span class="record-type">${escapeHtml(item.operation_label)}</span><strong class="record-title" title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</strong></div>
-            <div class="record-watermark" title="${escapeHtml(item.watermark)}">${escapeHtml(item.watermark || '未读取到水印文本')}</div>
-            <div class="record-time">${recordTime(item.created_at)}</div>
+            <div class="record-head"><span class="record-type record-type-${typeClass}">${escapeHtml(item.operation_label)}</span><time class="record-time">${recordTime(item.created_at)}</time></div>
+            <strong class="record-title" title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</strong>
+            <div class="record-watermark"><span>水印</span><b title="${escapeHtml(item.watermark || '—')}">${escapeHtml(item.watermark || '—')}</b></div>
+            ${note ? `<div class="record-note"><span>备注</span><b title="${escapeHtml(note)}">${escapeHtml(note)}</b></div>` : ''}
           </div>
-          <div class="record-detail">
-            <span class="record-meta-item"><strong>wm_shape</strong><em>${item.wm_shape ?? '—'}</em></span>
-            <span class="record-meta-item"><strong>备注</strong><em>${escapeHtml(item.note || '无备注')}</em></span>
-            <span class="record-meta-item"><strong>原图</strong><em>${formatBytes(item.original_size)} · ${recordDimension(item.original_width, item.original_height)}</em></span>
-            ${item.result_url ? `<span class="record-meta-item"><strong>${item.operation === 'extract' ? '水印内容' : '结果'}</strong><em>${formatBytes(item.result_size)} · ${recordDimension(item.result_width, item.result_height)}</em></span>` : '<span class="record-meta-item"><strong>类型</strong><em>提取文字</em></span>'}
-          </div>
+          <div class="record-detail">${facts.map(([label, value]) => `<span class="record-fact"><strong>${escapeHtml(label)}</strong><em>${escapeHtml(value)}</em></span>`).join('')}</div>
           <div class="record-actions">
-            <span class="actions-heading">操作</span>
-            <div class="actions-grid">
-              <button class="galaxy-button ghost" data-record-action="detail" data-id="${item.id}" title="查看详情"><svg class="icon icon-sm"><use href="#i-info"></use></svg><span>详情</span></button>
-              <a class="galaxy-button ghost" href="${item.original_url}?download=1" title="下载原图"><svg class="icon icon-sm"><use href="#i-download"></use></svg><span>原图</span></a>
-              ${item.result_url ? `<a class="galaxy-button ghost" href="${item.result_url}?download=1" title="下载${item.operation === 'extract' ? '水印内容' : '结果图'}"><svg class="icon icon-sm"><use href="#i-download"></use></svg><span>${item.operation === 'extract' ? '水印' : '结果'}</span></a>` : ''}
-              <button class="galaxy-button danger" data-record-action="delete" data-id="${item.id}" title="删除记录" aria-label="删除记录"><svg class="icon icon-sm"><use href="#i-trash"></use></svg></button>
-            </div>
+            <button class="galaxy-button ghost" data-record-action="detail" data-id="${item.id}" title="查看详情"><svg class="icon icon-sm"><use href="#i-info"></use></svg><span>详情</span></button>
+            ${primaryDownloadUrl ? `<a class="galaxy-button ghost" href="${escapeHtml(primaryDownloadUrl)}?download=1" title="下载${primaryDownloadLabel}"><svg class="icon icon-sm"><use href="#i-download"></use></svg><span>下载${primaryDownloadLabel}</span></a>` : ''}
+            <button class="galaxy-button danger" data-record-action="delete" data-id="${item.id}" title="删除记录" aria-label="删除记录"><svg class="icon icon-sm"><use href="#i-trash"></use></svg></button>
           </div>
-        </article>`).join('');
+        </article>`;
+        }).join('');
+        updateRecordSelectionUi();
       }
       async function loadRecords() {
         if (!state.user) return;
@@ -1032,6 +1217,7 @@
           const payload = await requestJson(`/api/records?${params.toString()}`);
           if (requestId !== state.historyRequest) return;
           state.records = payload.records || [];
+          state.selectedRecordIds.clear();
           document.getElementById('historyCount').textContent = `${payload.total || 0} 条`;
           renderHistory();
         } catch (error) { if (!error.auth) toast(error.message); }
@@ -1043,17 +1229,45 @@
           const payload = await requestJson(`/api/records/${id}`);
           state.detail = payload.record;
           const item = state.detail;
+          const isRecovery = item.operation === 'extract' && item.extract_mode === 'recover';
           document.getElementById('recordModalTitle').textContent = `${item.operation_label} · ${item.original_name}`;
           document.getElementById('recordModalSubtitle').textContent = recordTime(item.created_at);
           const resultLabel = item.operation === 'extract' ? '水印内容' : '处理结果';
-          document.getElementById('recordDetailBody').innerHTML = `<div class="detail-images"><div class="detail-image"><label>原图</label><img src="${item.original_url}" alt="原图" data-preview-src="${item.original_url}"></div><div class="detail-image"><label>${resultLabel}</label>${item.result_url ? `<img src="${item.result_url}" alt="${resultLabel}" data-preview-src="${item.result_url}">` : '<div class="empty-image">暂无结果图片</div>'}</div></div><div class="detail-grid"><div class="detail-cell"><label>操作类型</label><strong>${escapeHtml(item.operation_label)}</strong></div><div class="detail-cell detail-watermark"><label>水印内容</label><strong title="${escapeHtml(item.watermark || '—')}">${escapeHtml(item.watermark || '—')}</strong></div><div class="detail-cell"><label>wm_shape</label><strong>${item.wm_shape ?? '—'}</strong></div><div class="detail-cell"><label>图片密码</label><strong>${escapeHtml(item.pwd_img || '—')}</strong></div><div class="detail-cell"><label>水印密码</label><strong>${escapeHtml(item.pwd_wm || '—')}</strong></div><div class="detail-cell"><label>原图尺寸 / 大小</label><strong>${recordDimension(item.original_width, item.original_height)} · ${formatBytes(item.original_size)}</strong></div><div class="detail-cell"><label>${resultLabel}尺寸 / 大小</label><strong>${item.result_url ? `${recordDimension(item.result_width, item.result_height)} · ${formatBytes(item.result_size)}` : '—'}</strong></div><div class="detail-cell"><label>原始文件</label><strong title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</strong></div><div class="detail-cell"><label>${resultLabel}文件</label><strong title="${escapeHtml(item.result_name || '—')}">${escapeHtml(item.result_name || '—')}</strong></div></div><div class="detail-note field"><label for="recordNoteInput">备注</label><textarea class="galaxy-input" id="recordNoteInput" maxlength="500">${escapeHtml(item.note)}</textarea></div><div class="detail-actions"><a class="galaxy-button ghost" href="${item.original_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载原图</a>${item.result_url ? `<a class="galaxy-button ghost" href="${item.result_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载${resultLabel}</a>` : ''}${item.watermark ? '<button class="galaxy-button ghost" data-record-action="copy-watermark"><svg class="icon icon-sm"><use href="#i-copy"></use></svg>复制水印文字</button>' : ''}<button class="galaxy-button ghost" data-record-action="use"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>带入参数</button><button class="galaxy-button primary" data-record-action="save-note"><svg class="icon icon-sm"><use href="#i-check"></use></svg>保存备注</button></div>`;
+          const recoveryImages = isRecovery ? `<div class="detail-image"><label>完整水印参考图</label>${item.reference_url ? `<img src="${item.reference_url}" alt="完整水印参考图" data-preview-src="${item.reference_url}">` : '<div class="empty-image">参考图已被删除</div>'}</div><div class="detail-image"><label>恢复后的图片</label>${item.recovered_url ? `<img src="${item.recovered_url}" alt="恢复后的图片" data-preview-src="${item.recovered_url}">` : '<div class="empty-image">暂无恢复图</div>'}</div>` : '';
+          const recoveryDetails = isRecovery ? `<div class="detail-cell"><label>匹配置信度 score</label><strong>${item.recover_score == null ? '—' : Number(item.recover_score).toFixed(4)}</strong></div><div class="detail-cell"><label>推测裁剪坐标</label><strong>${Array.isArray(item.recover_loc) ? `[${item.recover_loc.join(', ')}]` : '—'}</strong></div><div class="detail-cell"><label>推测缩放比例</label><strong>${item.recover_scale == null ? '—' : `${Number(item.recover_scale).toFixed(4)}×`}</strong></div><div class="detail-cell"><label>参考图来源</label><strong>${item.reference_source === 'history' ? `历史记录 #${item.reference_record_id}` : '手动上传'}</strong></div>` : '';
+          const passwordDetails = item.pwd_img === item.pwd_wm ? `<div class="detail-cell"><label>图片和水印密码</label><strong>${escapeHtml(item.pwd_img || '—')}</strong></div>` : `<div class="detail-cell"><label>图片密码</label><strong>${escapeHtml(item.pwd_img || '—')}</strong></div><div class="detail-cell"><label>水印密码</label><strong>${escapeHtml(item.pwd_wm || '—')}</strong></div>`;
+          document.getElementById('recordDetailBody').innerHTML = `<div class="detail-images${isRecovery ? ' detail-images-recovery' : ''}"><div class="detail-image"><label>${isRecovery ? '待提取图片' : '原图'}</label><img src="${item.original_url}" alt="${isRecovery ? '待提取图片' : '原图'}" data-preview-src="${item.original_url}"></div><div class="detail-image"><label>${resultLabel}</label>${item.result_url ? `<img src="${item.result_url}" alt="${resultLabel}" data-preview-src="${item.result_url}">` : '<div class="empty-image">暂无结果图片</div>'}</div>${recoveryImages}</div><div class="detail-grid${isRecovery ? ' detail-grid-recovery' : ''}"><div class="detail-cell"><label>操作类型</label><strong>${escapeHtml(item.operation_label)}</strong></div><div class="detail-cell detail-watermark"><label>水印内容</label><strong title="${escapeHtml(item.watermark || '—')}">${escapeHtml(item.watermark || '—')}</strong></div><div class="detail-cell"><label>wm_shape</label><strong>${item.wm_shape ?? '—'}</strong></div>${passwordDetails}<div class="detail-cell"><label>${isRecovery ? '待提取图片尺寸 / 大小' : '原图尺寸 / 大小'}</label><strong>${recordDimension(item.original_width, item.original_height)} · ${formatBytes(item.original_size)}</strong></div><div class="detail-cell"><label>${resultLabel}尺寸 / 大小</label><strong>${item.result_url ? `${recordDimension(item.result_width, item.result_height)} · ${formatBytes(item.result_size)}` : '—'}</strong></div><div class="detail-cell"><label>原始文件</label><strong title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</strong></div><div class="detail-cell"><label>${resultLabel}文件</label><strong title="${escapeHtml(item.result_name || '—')}">${escapeHtml(item.result_name || '—')}</strong></div>${isRecovery && item.recovered_url ? `<div class="detail-cell"><label>恢复图尺寸 / 大小</label><strong>${recordDimension(item.recovered_width, item.recovered_height)} · ${formatBytes(item.recovered_size)}</strong></div>` : ''}${recoveryDetails}</div><div class="detail-note field"><label for="recordNoteInput">备注</label><textarea class="galaxy-input" id="recordNoteInput" maxlength="500">${escapeHtml(cleanRecordNote(item.note, isRecovery))}</textarea></div><div class="detail-actions"><a class="galaxy-button ghost" href="${item.original_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载${isRecovery ? '待提取图' : '原图'}</a>${isRecovery && item.reference_url ? `<a class="galaxy-button ghost" href="${item.reference_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载参考图</a>` : ''}${isRecovery && item.recovered_url ? `<a class="galaxy-button ghost" href="${item.recovered_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载恢复图</a>` : ''}${item.result_url ? `<a class="galaxy-button ghost" href="${item.result_url}?download=1"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载${resultLabel}</a>` : ''}${item.watermark ? '<button class="galaxy-button ghost" data-record-action="copy-watermark"><svg class="icon icon-sm"><use href="#i-copy"></use></svg>复制水印文字</button>' : ''}<button class="galaxy-button ghost" data-record-action="use"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>带入参数</button><button class="galaxy-button primary" data-record-action="save-note"><svg class="icon icon-sm"><use href="#i-check"></use></svg>保存备注</button></div>`;
           recordModal.classList.add('open');
         } catch (error) { if (!error.auth) toast(error.message); }
       }
       async function deleteRecord(id) { if (!window.confirm('删除后会同时移除本地图片文件，确定继续吗？')) return; try { await requestJson(`/api/records/${id}`, { method: 'DELETE' }); if (state.detail && state.detail.id === Number(id)) recordModal.classList.remove('open'); toast('记录已删除'); await refreshRecords(); } catch (error) { if (!error.auth) toast(error.message); } }
-      function useRecord(item) { if (!item) return; if (item.operation === 'embed') { document.getElementById('wmT').value = item.watermark || ''; document.getElementById('ePi').value = item.pwd_img || '1234'; document.getElementById('ePw').value = item.pwd_wm || '1234'; document.getElementById('eNote').value = item.note || ''; switchTab('embed'); } else { document.getElementById('wmS').value = item.wm_shape || ''; document.getElementById('xPi').value = item.pwd_img || '1234'; document.getElementById('xPw').value = item.pwd_wm || '1234'; document.getElementById('xNote').value = item.note || ''; switchTab('extract'); } recordModal.classList.remove('open'); toast('参数已带入表单，请重新选择图片'); }
+      async function deleteSelectedRecords() {
+        const ids = [...state.selectedRecordIds];
+        if (!ids.length || !window.confirm(`确定删除选中的 ${ids.length} 条记录吗？关联的本地图片也会同时删除。`)) return;
+        const button = document.getElementById('batchDeleteRecords');
+        buttonLoading(button, '正在删除…');
+        try {
+          const payload = await requestJson('/api/records/batch', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+          });
+          state.selectedRecordIds.clear();
+          toast(`已删除 ${payload.deleted || ids.length} 条记录`);
+          await refreshRecords();
+        } catch (error) {
+          if (!error.auth) toast(error.message);
+        } finally {
+          buttonReady(button, '批量删除', 'i-trash');
+          updateRecordSelectionUi();
+        }
+      }
+      async function useRecord(item) { if (!item) return; if (item.operation === 'embed') { document.getElementById('wmT').value = item.watermark || ''; setPasswordValues('e', item.pwd_img, item.pwd_wm); document.getElementById('eNote').value = item.note || ''; switchTab('embed'); } else if (item.extract_mode === 'recover') { document.getElementById('rWmS').value = item.wm_shape || ''; setPasswordValues('r', item.pwd_img, item.pwd_wm); switchTab('extract'); setExtractMode('recover', { loadReferences: false }); if (item.reference_source === 'history' && item.reference_record_id) { await loadEmbedReferences(item.reference_record_id); } else { clearUpload('RR', false); } } else { document.getElementById('wmS').value = item.wm_shape || ''; setPasswordValues('x', item.pwd_img, item.pwd_wm); document.getElementById('xNote').value = item.note || ''; switchTab('extract'); setExtractMode('normal'); } recordModal.classList.remove('open'); toast('参数已带入表单，请重新选择图片'); }
       window.useHistory = (id) => { const item = state.records.find(entry => entry.id === Number(id)); if (item) openRecordDetail(item.id); };
-      historyContainer.addEventListener('click', e => { const action = e.target.closest('[data-record-action]'); if (!action) return; const id = Number(action.dataset.id); if (action.dataset.recordAction === 'detail') openRecordDetail(id); if (action.dataset.recordAction === 'delete') deleteRecord(id); });
+      historyContainer.addEventListener('click', e => { const preview = e.target.closest('[data-record-preview]'); if (preview) { openViewer(preview.dataset.recordPreview, preview.dataset.previewName); return; } const action = e.target.closest('[data-record-action]'); if (!action) return; const id = Number(action.dataset.id); if (action.dataset.recordAction === 'detail') openRecordDetail(id); if (action.dataset.recordAction === 'delete') deleteRecord(id); });
+      historyContainer.addEventListener('change', e => { const checkbox = e.target.closest('[data-record-select]'); if (!checkbox) return; const id = Number(checkbox.value); if (checkbox.checked) state.selectedRecordIds.add(id); else state.selectedRecordIds.delete(id); updateRecordSelectionUi(); });
+      document.getElementById('selectAllRecords').addEventListener('change', e => { state.selectedRecordIds.clear(); if (e.target.checked) state.records.forEach(item => state.selectedRecordIds.add(Number(item.id))); updateRecordSelectionUi(); });
+      document.getElementById('batchDeleteRecords').addEventListener('click', deleteSelectedRecords);
       document.getElementById('historyRefresh').addEventListener('click', () => loadRecords());
       let searchTimer;
       document.getElementById('historySearch').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadRecords, 220); });
@@ -1061,15 +1275,30 @@
       document.getElementById('recordDetailBody').addEventListener('click', async e => { const image = e.target.closest('[data-preview-src]'); if (image) { openViewer(image.dataset.previewSrc, image.alt); return; } const action = e.target.closest('[data-record-action]'); if (!action || !state.detail) return; if (action.dataset.recordAction === 'copy-watermark') copyWatermark(state.detail.watermark); if (action.dataset.recordAction === 'use') useRecord(state.detail); if (action.dataset.recordAction === 'save-note') { try { const note = document.getElementById('recordNoteInput').value.trim(); await requestJson(`/api/records/${state.detail.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note }) }); state.detail.note = note; toast('备注已保存'); await loadRecords(); } catch (error) { if (!error.auth) toast(error.message); } } });
       document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.closeModal).classList.remove('open')));
       recordModal.addEventListener('click', e => { if (e.target === recordModal) recordModal.classList.remove('open'); });
-      authSwitch.addEventListener('click', () => { if (registrationAvailable) setAuthMode(registerForm.style.display === 'none'); });
       loginForm.addEventListener('submit', async e => { e.preventDefault(); const errorBox = document.getElementById('loginError'); errorBox.textContent = ''; const submit = loginForm.querySelector('button[type="submit"]'); buttonLoading(submit, '正在登录…'); try { const payload = await requestJson('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('loginUsername').value.trim(), password: document.getElementById('loginPassword').value }) }); hideAuth(payload.user); toast('登录成功'); await refreshRecords(); } catch (error) { if (!error.auth) errorBox.textContent = error.message; } finally { buttonReady(submit, '登录', 'i-lock'); } });
       registerForm.addEventListener('submit', async e => { e.preventDefault(); const errorBox = document.getElementById('registerError'); errorBox.textContent = ''; const submit = registerForm.querySelector('button[type="submit"]'); buttonLoading(submit, '正在创建…'); try { const payload = await requestJson('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('registerUsername').value.trim(), password: document.getElementById('registerPassword').value }) }); registrationAvailable = false; hideAuth(payload.user); toast('本地账户已创建'); await refreshRecords(); } catch (error) { if (!error.auth) errorBox.textContent = error.message; } finally { buttonReady(submit, '创建本地账户', 'i-spark'); } });
       document.getElementById('accountBtn').addEventListener('click', () => { if (!state.user) return; document.getElementById('accountUsername').value = state.user.username || ''; document.getElementById('accountCurrentPassword').value = ''; document.getElementById('accountNewPassword').value = ''; document.getElementById('accountError').textContent = ''; accountModal.classList.add('open'); });
       document.getElementById('accountForm').addEventListener('submit', async e => { e.preventDefault(); const errorBox = document.getElementById('accountError'); errorBox.textContent = ''; const form = e.currentTarget; const submit = form.querySelector('button[type="submit"]'); buttonLoading(submit, '正在保存…'); try { const payload = await requestJson('/api/auth/account', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('accountUsername').value.trim(), current_password: document.getElementById('accountCurrentPassword').value, password: document.getElementById('accountNewPassword').value }) }); hideAuth(payload.user); accountModal.classList.remove('open'); toast('账户信息已更新'); } catch (error) { if (!error.auth) errorBox.textContent = error.message; } finally { buttonReady(submit, '保存修改', 'i-check'); } });
-      document.getElementById('logoutBtn').addEventListener('click', async () => { try { await requestJson('/api/auth/logout', { method: 'POST' }); state.user = null; accountModal.classList.remove('open'); showAuth('', false); toast('已退出登录'); } catch (error) { if (!error.auth) toast(error.message); } });
+      document.getElementById('logoutBtn').addEventListener('click', async () => { try { await requestJson('/api/auth/logout', { method: 'POST' }); state.user = null; accountModal.classList.remove('open'); showAuth(); toast('已退出登录'); } catch (error) { if (!error.auth) toast(error.message); } });
       document.addEventListener('keydown', e => { if (e.key === 'Escape') { accountModal.classList.remove('open'); recordModal.classList.remove('open'); } });
-      async function bootAuth() { try { const response = await fetch('/api/auth/status'); const payload = await response.json(); registrationAvailable = !payload.has_users; if (payload.authenticated) { hideAuth(payload.user); await refreshRecords(); } else { showAuth('', registrationAvailable); updateStats([]); } } catch (_) { showAuth('服务连接失败，请确认后端已启动'); } }
+      async function bootAuth() { try { const response = await fetch('/api/auth/status'); const payload = await response.json(); registrationAvailable = !payload.has_users; if (payload.authenticated) { hideAuth(payload.user); await refreshRecords(); } else { showAuth(); updateStats([]); } } catch (_) { registrationAvailable = false; showAuth('服务连接失败，请确认后端已启动'); } }
       const buttonLoading = (button, loadingText) => { button.disabled = true; button.innerHTML = `<span class="spinner"></span>${loadingText}`; }; const buttonReady = (button, label, icon) => { button.disabled = false; button.innerHTML = `<svg class="icon icon-sm"><use href="#${icon}"></use></svg>${label}`; }; const showError = (box, content, label) => { box.classList.add('show', 'error'); const card = box.closest('.workspace-card'); const empty = card?.querySelector('.result-placeholder'); if (empty) empty.style.display = 'flex'; const flow = card?.querySelector('.image-flow'); if (flow) flow.classList.remove('is-processing', 'is-split', 'is-revealed'); box.querySelector('.result-label').textContent = label; box.querySelector('.result-body').innerHTML = escapeHtml(content); toast(content); };
+      function clearWorkflow(prefix) {
+        if (prefix === 'R') {
+          clearUpload('RR', false);
+          clearUpload('RT', false);
+          document.getElementById('rNote').value = '';
+          resetRecoveryResult();
+        } else {
+          clearUpload(prefix, false);
+          document.getElementById(prefix === 'E' ? 'eNote' : 'xNote').value = '';
+          resetStandardResult(prefix);
+        }
+        toast('本次图片和结果已清空');
+      }
+      document.getElementById('clearE').addEventListener('click', () => clearWorkflow('E'));
+      document.getElementById('clearX').addEventListener('click', () => clearWorkflow('X'));
+      document.getElementById('clearR').addEventListener('click', () => clearWorkflow('R'));
 
       document.getElementById('btnE').addEventListener('click', async () => {
         const file = document.getElementById('inpE').files[0];
@@ -1082,10 +1311,11 @@
         if (!file) { toast('请先上传一张图片'); return; }
         if (!textValue) { toast('请输入水印文字'); document.getElementById('wmT').focus(); return; }
         const data = new FormData();
+        const passwords = passwordValues('e');
         data.append('image', file);
         data.append('text', textValue);
-        data.append('pwd_img', document.getElementById('ePi').value || '1234');
-        data.append('pwd_wm', document.getElementById('ePw').value || '1234');
+        data.append('pwd_img', passwords.pwdImg);
+        data.append('pwd_wm', passwords.pwdWm);
         data.append('note', document.getElementById('eNote').value.trim());
         buttonLoading(button, '正在嵌入…');
         if (resultImage) { resultImage.classList.remove('is-visible'); resultImage.removeAttribute('src'); }
@@ -1106,6 +1336,7 @@
           updateImageInfo('E', dataUrl, 'watermarked.png', blob.size, 'PNG');
           toast('水印嵌入完成');
           await refreshRecords();
+          await loadEmbedReferences(payload.record_id);
         } catch (error) {
           result.classList.add('show');
           showError(result, error.message || '网络连接异常', '网络错误');
@@ -1122,10 +1353,11 @@
         if (!file) { toast('请先上传带水印的图片'); return; }
         if (!shape) { toast('请输入水印长度 wm_shape'); document.getElementById('wmS').focus(); return; }
         const data = new FormData();
+        const passwords = passwordValues('x');
         data.append('image', file);
         data.append('wm_shape', shape);
-        data.append('pwd_img', document.getElementById('xPi').value || '1234');
-        data.append('pwd_wm', document.getElementById('xPw').value || '1234');
+        data.append('pwd_img', passwords.pwdImg);
+        data.append('pwd_wm', passwords.pwdWm);
         data.append('note', document.getElementById('xNote').value.trim());
         buttonLoading(button, '正在提取…');
         if (resultImage) { resultImage.classList.remove('is-visible'); resultImage.removeAttribute('src'); }
@@ -1151,7 +1383,51 @@
           showError(result, error.message || '网络连接异常', '网络错误');
         } finally { buttonReady(button, '提取水印', 'i-extract'); }
       });
+      document.getElementById('btnR').addEventListener('click', async () => {
+        const targetFile = document.getElementById('inpRT').files[0];
+        const result = document.getElementById('resR');
+        const button = document.getElementById('btnR');
+        if (!targetFile) { toast('请上传裁剪或缩放后的待提取图片'); return; }
+        const data = new FormData();
+        data.append('image', targetFile);
+        data.append('reference_source', state.recoverySource);
+        data.append('note', document.getElementById('rNote').value.trim());
+        if (state.recoverySource === 'history') {
+          const recordId = document.getElementById('recoverHistoryRecord').value;
+          if (!recordId) { toast('请选择一条历史嵌入记录'); return; }
+          data.append('history_record_id', recordId);
+        } else {
+          const referenceFile = document.getElementById('inpRR').files[0];
+          const shape = document.getElementById('rWmS').value.trim();
+          if (!referenceFile) { toast('请上传完整水印参考图'); return; }
+          if (!shape) { toast('请输入水印长度 wm_shape'); document.getElementById('rWmS').focus(); return; }
+          const passwords = passwordValues('r');
+          data.append('reference_image', referenceFile);
+          data.append('wm_shape', shape);
+          data.append('pwd_img', passwords.pwdImg);
+          data.append('pwd_wm', passwords.pwdWm);
+        }
+        buttonLoading(button, '正在恢复…');
+        result.classList.remove('show');
+        result.innerHTML = '';
+        try {
+          const payload = await requestJson('/api/extract/recover', { method: 'POST', body: data });
+          const score = Number(payload.score);
+          const scale = Number(payload.scale);
+          const loc = Array.isArray(payload.loc) ? payload.loc : [];
+          const warning = payload.low_confidence ? `<div class="recovery-warning">${escapeHtml(payload.warning || '参考图与待提取图片可能无法匹配')}</div>` : '';
+          result.innerHTML = `<div class="recovery-result-layout"><img class="recovered-preview" src="${payload.recovered_url}" alt="恢复后的图片" data-recovery-preview><div class="recovery-result-copy"><div class="result-label">恢复提取完成</div><div class="watermark-value">“${escapeHtml(payload.watermark)}”</div><div class="recovery-metrics"><div class="recovery-metric"><label>匹配置信度 score</label><strong>${Number.isFinite(score) ? `${score.toFixed(4)} (${(score * 100).toFixed(1)}%)` : '—'}</strong></div><div class="recovery-metric"><label>推测裁剪坐标</label><strong>${loc.length === 4 ? `[${loc[0]}, ${loc[1]}] – [${loc[2]}, ${loc[3]}]` : '—'}</strong></div><div class="recovery-metric"><label>推测缩放比例</label><strong>${Number.isFinite(scale) ? `${scale.toFixed(4)}×` : '—'}</strong></div></div>${warning}<div class="recovery-result-actions"><a class="galaxy-button ghost" href="${payload.recovered_url}?download=1" download="${escapeHtml(payload.recovered_name || 'recovered.png')}"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载恢复图</a><a class="galaxy-button ghost" href="${payload.result_url}?download=1" download="${escapeHtml(payload.result_name || 'watermark-content.svg')}"><svg class="icon icon-sm"><use href="#i-download"></use></svg>下载水印内容</a><button class="galaxy-button primary" type="button" data-copy-watermark="${escapeHtml(payload.watermark)}"><svg class="icon icon-sm"><use href="#i-copy"></use></svg>复制水印文字</button></div></div></div>`;
+          result.classList.add('show');
+          toast('图片恢复和水印提取完成');
+          await refreshRecords();
+        } catch (error) {
+          result.innerHTML = `<div class="recovery-result-copy error"><div class="result-label" style="color:var(--rose)">恢复提取失败</div><div class="result-body">${escapeHtml(error.message || '网络连接异常')}</div></div>`;
+          result.classList.add('show');
+          toast(error.message || '恢复提取失败');
+        } finally { buttonReady(button, '恢复并提取', 'i-extract'); }
+      });
       document.getElementById('resXC').addEventListener('click', e => { const button = e.target.closest('[data-copy-watermark]'); if (button) copyWatermark(button.dataset.copyWatermark); });
+      document.getElementById('resR').addEventListener('click', e => { const preview = e.target.closest('[data-recovery-preview]'); if (preview) { openViewer(preview.src, '恢复后的图片'); return; } const button = e.target.closest('[data-copy-watermark]'); if (button) copyWatermark(button.dataset.copyWatermark); });
       window.copyShape = async (shape) => { try { await navigator.clipboard.writeText(String(shape)); toast('wm_shape 已复制'); } catch (_) { toast('wm_shape：' + shape); } };
       bootAuth();
     })();

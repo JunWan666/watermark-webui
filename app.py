@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Blind Watermark WebUI backend with local SQLite persistence."""
+import json
+import math
 import os
 import sqlite3
 import sys
+import threading
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
 from xml.sax.saxutils import escape as xml_escape
@@ -13,6 +17,7 @@ sys.path.insert(0, '/usr/lib/python3/dist-packages')
 
 import cv2
 from blind_watermark import WaterMark
+from blind_watermark.recover import estimate_crop_parameters, match_template, recover_crop
 from flask import Flask, jsonify, request, render_template_string, send_file, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -24,6 +29,9 @@ RESULT_DIR = os.path.join(DATA_DIR, 'results')
 DB_PATH = os.path.join(DATA_DIR, 'watermark.db')
 LEGACY_OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 HTML_PATH = os.path.join(BASE_DIR, 'static', 'index.html')
+RECOVERY_MATCH_LOCK = threading.Lock()
+RECOVERY_MIN_SCORE = 0.15
+RECOVERY_LOW_SCORE = 0.45
 
 for directory in (DATA_DIR, UPLOAD_DIR, RESULT_DIR, LEGACY_OUTPUT_DIR):
     os.makedirs(directory, exist_ok=True)
@@ -38,11 +46,19 @@ app.config.update(
 )
 
 
+@contextmanager
 def db_connection():
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
     connection.execute('PRAGMA foreign_keys = ON')
-    return connection
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def init_db():
@@ -82,6 +98,29 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_records_search ON records(user_id, original_name, result_name, watermark, note, wm_shape);
             """
         )
+        db.execute('BEGIN IMMEDIATE')
+        existing_columns = {row['name'] for row in db.execute('PRAGMA table_info(records)')}
+        recovery_columns = {
+            'extract_mode': "TEXT NOT NULL DEFAULT 'normal'",
+            'reference_source': 'TEXT',
+            'reference_record_id': 'INTEGER',
+            'reference_name': 'TEXT',
+            'reference_path': 'TEXT',
+            'reference_size': 'INTEGER NOT NULL DEFAULT 0',
+            'reference_width': 'INTEGER',
+            'reference_height': 'INTEGER',
+            'recovered_name': 'TEXT',
+            'recovered_path': 'TEXT',
+            'recovered_size': 'INTEGER NOT NULL DEFAULT 0',
+            'recovered_width': 'INTEGER',
+            'recovered_height': 'INTEGER',
+            'recover_score': 'REAL',
+            'recover_loc': 'TEXT',
+            'recover_scale': 'REAL',
+        }
+        for column, definition in recovery_columns.items():
+            if column not in existing_columns:
+                db.execute(f'ALTER TABLE records ADD COLUMN {column} {definition}')
 
 
 init_db()
@@ -115,10 +154,19 @@ def user_payload(user):
 
 
 def record_payload(row, include_secrets=False):
+    extract_mode = row['extract_mode'] or 'normal'
+    is_recovery = row['operation'] == 'extract' and extract_mode == 'recover'
+    recover_loc = None
+    if row['recover_loc']:
+        try:
+            recover_loc = json.loads(row['recover_loc'])
+        except (TypeError, ValueError):
+            recover_loc = None
     payload = {
         'id': row['id'],
         'operation': row['operation'],
-        'operation_label': '嵌入水印' if row['operation'] == 'embed' else '提取水印',
+        'operation_label': '嵌入水印' if row['operation'] == 'embed' else ('恢复提取' if is_recovery else '普通提取'),
+        'extract_mode': extract_mode,
         'original_name': row['original_name'],
         'result_name': row['result_name'],
         'watermark': row['watermark'] or '',
@@ -133,6 +181,22 @@ def record_payload(row, include_secrets=False):
         'created_at': row['created_at'],
         'original_url': f"/api/records/{row['id']}/original",
         'result_url': f"/api/records/{row['id']}/result" if row['result_path'] else None,
+        'reference_source': row['reference_source'],
+        'reference_record_id': row['reference_record_id'],
+        'reference_name': row['reference_name'],
+        'reference_size': row['reference_size'],
+        'reference_width': row['reference_width'],
+        'reference_height': row['reference_height'],
+        'reference_url': f"/api/records/{row['id']}/reference" if is_recovery else None,
+        'recovered_name': row['recovered_name'],
+        'recovered_size': row['recovered_size'],
+        'recovered_width': row['recovered_width'],
+        'recovered_height': row['recovered_height'],
+        'recovered_url': f"/api/records/{row['id']}/recovered" if row['recovered_path'] else None,
+        'recover_score': row['recover_score'],
+        'recover_loc': recover_loc,
+        'recover_scale': row['recover_scale'],
+        'low_confidence': bool(is_recovery and row['recover_score'] is not None and row['recover_score'] < RECOVERY_LOW_SCORE),
     }
     if include_secrets:
         payload.update({'pwd_img': row['pwd_img'], 'pwd_wm': row['pwd_wm']})
@@ -145,8 +209,59 @@ def safe_upload_path(uploaded_file, directory, default_ext='.jpg'):
     extension = os.path.splitext(storage_name)[1].lower() or default_ext
     stored_name = f'{uuid.uuid4().hex}{extension}'
     path = os.path.join(directory, stored_name)
-    uploaded_file.save(path)
+    try:
+        uploaded_file.save(path)
+    except Exception:
+        remove_stored_file(path, directory)
+        raise
     return original_name, path
+
+
+def safe_stored_path(path, directory):
+    """Resolve a database path only when it stays inside its storage root."""
+    if not path:
+        return None
+    try:
+        candidate = os.path.realpath(path)
+        root = os.path.realpath(directory)
+        if os.path.normcase(os.path.commonpath((candidate, root))) != os.path.normcase(root):
+            return None
+        return candidate
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def remove_stored_file(path, directory):
+    safe_path = safe_stored_path(path, directory)
+    if not safe_path:
+        return
+    try:
+        if os.path.isfile(safe_path):
+            os.remove(safe_path)
+    except OSError:
+        app.logger.warning('Failed to remove stored file %s', safe_path, exc_info=True)
+
+
+def cleanup_created_files(paths):
+    for path, directory in paths:
+        remove_stored_file(path, directory)
+
+
+def record_stored_files(row):
+    return (
+        (row['original_path'], UPLOAD_DIR),
+        (row['reference_path'], UPLOAD_DIR),
+        (row['result_path'], RESULT_DIR),
+        (row['recovered_path'], RESULT_DIR),
+    )
+
+
+def watermark_password_values(form):
+    common_password = form.get('password')
+    default_password = common_password if common_password not in (None, '') else '1234'
+    pwd_img = form.get('pwd_img', default_password) or default_password
+    pwd_wm = form.get('pwd_wm', default_password) or default_password
+    return str(pwd_img).strip(), str(pwd_wm).strip()
 
 
 def image_dimensions(path):
@@ -343,8 +458,7 @@ def api_embed():
     watermark_text = request.form.get('text', '').strip()
     if not watermark_text:
         return jsonify({'error': '请输入水印文字'}), 400
-    pwd_img = request.form.get('pwd_img', '1234') or '1234'
-    pwd_wm = request.form.get('pwd_wm', '1234') or '1234'
+    pwd_img, pwd_wm = watermark_password_values(request.form)
     note = request.form.get('note', '').strip()[:500]
     try:
         int(pwd_img)
@@ -410,16 +524,20 @@ def api_extract():
         return jsonify({'error': '请输入水印长度 (wm_shape)，需要和嵌入时一致'}), 400
     try:
         wm_shape = int(wm_shape_value)
-        pwd_img = request.form.get('pwd_img', '1234') or '1234'
-        pwd_wm = request.form.get('pwd_wm', '1234') or '1234'
+        pwd_img, pwd_wm = watermark_password_values(request.form)
         int(pwd_img)
         int(pwd_wm)
     except ValueError:
         return jsonify({'error': '水印长度和密码必须为数字'}), 400
+    if wm_shape <= 0:
+        return jsonify({'error': '水印长度 wm_shape 必须大于 0'}), 400
     note = request.form.get('note', '').strip()[:500]
 
     original_name, original_path = safe_upload_path(uploaded, UPLOAD_DIR)
     original_width, original_height = image_dimensions(original_path)
+    if original_width is None or original_height is None:
+        remove_stored_file(original_path, UPLOAD_DIR)
+        return jsonify({'error': '图片无法读取，请上传有效的 PNG 或 JPG 图片', 'code': 'INVALID_IMAGE'}), 400
     result_name = f'extract-{uuid.uuid4().hex}.svg'
     result_path = os.path.join(RESULT_DIR, result_name)
     try:
@@ -460,6 +578,250 @@ def api_extract():
             except OSError:
                 pass
         return jsonify({'error': f'水印提取失败: {error}'}), 500
+
+
+class RecoveryRequestError(Exception):
+    def __init__(self, message, status=400, code='RECOVERY_REQUEST_INVALID'):
+        super().__init__(message)
+        self.status = status
+        self.code = code
+
+
+def recovery_extract_parameters():
+    wm_shape_value = request.form.get('wm_shape', '').strip()
+    pwd_img, pwd_wm = watermark_password_values(request.form)
+    if not wm_shape_value:
+        raise RecoveryRequestError('请输入嵌入时保存的水印长度 wm_shape')
+    try:
+        wm_shape = int(wm_shape_value)
+        pwd_img_number = int(pwd_img)
+        pwd_wm_number = int(pwd_wm)
+    except ValueError as error:
+        raise RecoveryRequestError('水印长度和密码必须为数字') from error
+    if wm_shape <= 0:
+        raise RecoveryRequestError('水印长度 wm_shape 必须大于 0')
+    if not 0 <= pwd_img_number <= 2**32 - 1 or not 0 <= pwd_wm_number <= 2**32 - 1:
+        raise RecoveryRequestError('图片密码和水印密码必须在 0 到 4294967295 之间')
+    return wm_shape, pwd_img, pwd_wm, pwd_img_number, pwd_wm_number
+
+
+@app.route('/api/extract/recover', methods=['POST'])
+@login_required
+def api_extract_recover():
+    uploaded = request.files.get('image')
+    if not uploaded or not uploaded.filename:
+        return jsonify({'error': '请上传经过裁剪或缩放的待提取图片'}), 400
+
+    reference_source = request.form.get('reference_source', '').strip().lower()
+    if not reference_source:
+        reference_source = 'history' if request.form.get('history_record_id', '').strip() else 'manual'
+    if reference_source not in ('history', 'manual'):
+        return jsonify({'error': '参考图来源必须为历史记录或手动上传'}), 400
+
+    created_files = []
+    reference_record_id = None
+    reference_path = None
+    stored_reference_path = None
+    try:
+        if reference_source == 'history':
+            try:
+                reference_record_id = int(request.form.get('history_record_id', '').strip())
+            except ValueError as error:
+                raise RecoveryRequestError('请选择一条有效的历史嵌入记录') from error
+            reference_record = owned_record(reference_record_id)
+            if not reference_record:
+                raise RecoveryRequestError('历史嵌入记录不存在', 404, 'REFERENCE_RECORD_NOT_FOUND')
+            if reference_record['operation'] != 'embed':
+                raise RecoveryRequestError('所选记录不是嵌入记录，不能作为完整水印参考图')
+            reference_path = safe_stored_path(reference_record['result_path'], RESULT_DIR)
+            if not reference_path or not os.path.isfile(reference_path):
+                raise RecoveryRequestError('历史记录的完整水印结果图不存在', 404, 'REFERENCE_FILE_NOT_FOUND')
+            wm_shape = reference_record['wm_shape']
+            pwd_img = reference_record['pwd_img']
+            pwd_wm = reference_record['pwd_wm']
+            try:
+                pwd_img_number = int(pwd_img)
+                pwd_wm_number = int(pwd_wm)
+                wm_shape = int(wm_shape)
+            except (TypeError, ValueError) as error:
+                raise RecoveryRequestError('历史记录保存的 wm_shape 或密码无效') from error
+            if wm_shape <= 0:
+                raise RecoveryRequestError('历史记录保存的 wm_shape 无效')
+            reference_name = reference_record['result_name'] or '完整水印参考图.png'
+        else:
+            reference_upload = request.files.get('reference_image')
+            if not reference_upload or not reference_upload.filename:
+                raise RecoveryRequestError('请上传嵌入水印后生成的完整水印参考图')
+            wm_shape, pwd_img, pwd_wm, pwd_img_number, pwd_wm_number = recovery_extract_parameters()
+            reference_name, reference_path = safe_upload_path(reference_upload, UPLOAD_DIR)
+            stored_reference_path = reference_path
+            created_files.append((reference_path, UPLOAD_DIR))
+
+        reference_width, reference_height = image_dimensions(reference_path)
+        if reference_width is None or reference_height is None:
+            raise RecoveryRequestError('完整水印参考图无法读取，请上传有效图片', 400, 'INVALID_REFERENCE_IMAGE')
+
+        original_name, original_path = safe_upload_path(uploaded, UPLOAD_DIR)
+        created_files.append((original_path, UPLOAD_DIR))
+        original_width, original_height = image_dimensions(original_path)
+        if original_width is None or original_height is None:
+            raise RecoveryRequestError('待提取图片无法读取，请上传有效图片', 400, 'INVALID_TARGET_IMAGE')
+        if original_width > reference_width or original_height > reference_height:
+            raise RecoveryRequestError(
+                '待提取图片尺寸大于完整水印参考图，第一版恢复提取不支持这种情况',
+                400,
+                'TARGET_LARGER_THAN_REFERENCE',
+            )
+
+        recovered_name = f'recovered-{uuid.uuid4().hex}.png'
+        recovered_path = os.path.join(RESULT_DIR, recovered_name)
+        created_files.append((recovered_path, RESULT_DIR))
+        try:
+            with RECOVERY_MATCH_LOCK:
+                try:
+                    loc, image_o_shape, score, scale = estimate_crop_parameters(
+                        original_file=reference_path,
+                        template_file=original_path,
+                        scale=(0.5, 2),
+                        search_num=200,
+                    )
+                finally:
+                    match_template.cache_clear()
+                score = float(score)
+                scale = float(scale)
+                loc = tuple(int(value) for value in loc)
+                if not math.isfinite(score) or not math.isfinite(scale):
+                    raise ValueError('non-finite match result')
+                if score < RECOVERY_MIN_SCORE:
+                    raise RecoveryRequestError(
+                        '参考图与待提取图片无法匹配，请确认两张图片来自同一次嵌入结果',
+                        422,
+                        'RECOVERY_NO_MATCH',
+                    )
+                x1, y1, x2, y2 = loc
+                if x1 < 0 or y1 < 0 or x2 <= x1 or y2 <= y1 or x2 > reference_width or y2 > reference_height:
+                    raise ValueError('invalid recovered crop bounds')
+                recover_crop(
+                    template_file=original_path,
+                    output_file_name=recovered_path,
+                    loc=loc,
+                    image_o_shape=image_o_shape,
+                )
+        except RecoveryRequestError:
+            raise
+        except (cv2.error, TypeError, ValueError, IndexError) as error:
+            raise RecoveryRequestError(
+                '参考图与待提取图片无法匹配，请检查图片尺寸和内容',
+                422,
+                'RECOVERY_MATCH_FAILED',
+            ) from error
+
+        recovered_width, recovered_height = image_dimensions(recovered_path)
+        if recovered_width is None or recovered_height is None:
+            raise RecoveryRequestError('恢复后的图片生成失败', 500, 'RECOVERED_IMAGE_INVALID')
+
+        try:
+            bwm = WaterMark(password_img=pwd_img_number, password_wm=pwd_wm_number)
+            extracted = bwm.extract(recovered_path, wm_shape=wm_shape, mode='str')
+        except Exception as error:
+            raise RecoveryRequestError(
+                '水印提取失败，请检查 wm_shape、图片密码和水印密码',
+                422,
+                'WATERMARK_EXTRACTION_FAILED',
+            ) from error
+
+        timestamp = now_iso()
+        result_name = f'extract-{uuid.uuid4().hex}.svg'
+        result_path = os.path.join(RESULT_DIR, result_name)
+        created_files.append((result_path, RESULT_DIR))
+        write_watermark_svg(result_path, extracted, wm_shape, timestamp)
+        reference_size = os.path.getsize(reference_path)
+        recovered_size = os.path.getsize(recovered_path)
+        result_size = os.path.getsize(result_path)
+        note = request.form.get('note', '').strip()[:500]
+        with db_connection() as db:
+            cursor = db.execute(
+                """INSERT INTO records(
+                    user_id, operation, original_name, original_path, result_name, result_path,
+                    watermark, wm_shape, pwd_img, pwd_wm, note, original_size, result_size,
+                    original_width, original_height, result_width, result_height, created_at,
+                    extract_mode, reference_source, reference_record_id, reference_name, reference_path,
+                    reference_size, reference_width, reference_height, recovered_name, recovered_path,
+                    recovered_size, recovered_width, recovered_height, recover_score, recover_loc, recover_scale
+                ) VALUES (
+                    :user_id, 'extract', :original_name, :original_path, :result_name, :result_path,
+                    :watermark, :wm_shape, :pwd_img, :pwd_wm, :note, :original_size, :result_size,
+                    :original_width, :original_height, 960, 420, :created_at,
+                    'recover', :reference_source, :reference_record_id, :reference_name, :reference_path,
+                    :reference_size, :reference_width, :reference_height, :recovered_name, :recovered_path,
+                    :recovered_size, :recovered_width, :recovered_height, :recover_score, :recover_loc, :recover_scale
+                )""",
+                {
+                    'user_id': current_user_id(),
+                    'original_name': original_name,
+                    'original_path': original_path,
+                    'result_name': result_name,
+                    'result_path': result_path,
+                    'watermark': extracted,
+                    'wm_shape': wm_shape,
+                    'pwd_img': pwd_img,
+                    'pwd_wm': pwd_wm,
+                    'note': note,
+                    'original_size': os.path.getsize(original_path),
+                    'result_size': result_size,
+                    'original_width': original_width,
+                    'original_height': original_height,
+                    'created_at': timestamp,
+                    'reference_source': reference_source,
+                    'reference_record_id': reference_record_id,
+                    'reference_name': reference_name,
+                    'reference_path': stored_reference_path,
+                    'reference_size': reference_size,
+                    'reference_width': reference_width,
+                    'reference_height': reference_height,
+                    'recovered_name': recovered_name,
+                    'recovered_path': recovered_path,
+                    'recovered_size': recovered_size,
+                    'recovered_width': recovered_width,
+                    'recovered_height': recovered_height,
+                    'recover_score': score,
+                    'recover_loc': json.dumps(loc),
+                    'recover_scale': scale,
+                },
+            )
+            record_id = cursor.lastrowid
+
+        low_confidence = score < RECOVERY_LOW_SCORE
+        return jsonify({
+            'success': True,
+            'record_id': record_id,
+            'watermark': extracted,
+            'score': score,
+            'loc': list(loc),
+            'scale': scale,
+            'low_confidence': low_confidence,
+            'warning': '参考图与待提取图片可能无法匹配' if low_confidence else '',
+            'reference_source': reference_source,
+            'original_url': f'/api/records/{record_id}/original',
+            'reference_url': f'/api/records/{record_id}/reference',
+            'recovered_url': f'/api/records/{record_id}/recovered',
+            'recovered_name': recovered_name,
+            'recovered_size': recovered_size,
+            'recovered_width': recovered_width,
+            'recovered_height': recovered_height,
+            'result_url': f'/api/records/{record_id}/result',
+            'result_name': result_name,
+            'result_size': result_size,
+            'result_width': 960,
+            'result_height': 420,
+        })
+    except RecoveryRequestError as error:
+        cleanup_created_files(created_files)
+        return jsonify({'error': str(error), 'code': error.code}), error.status
+    except Exception:
+        cleanup_created_files(created_files)
+        app.logger.exception('Unexpected recovery extraction failure')
+        return jsonify({'error': '恢复提取失败，请稍后重试', 'code': 'RECOVERY_FAILED'}), 500
 
 
 @app.route('/api/records')
@@ -512,22 +874,63 @@ def delete_record(record_id):
         return jsonify({'error': '记录不存在'}), 404
     with db_connection() as db:
         db.execute('DELETE FROM records WHERE id = ? AND user_id = ?', (record_id, current_user_id()))
-    for path in (row['original_path'], row['result_path']):
-        try:
-            if path and os.path.exists(path):
-                os.remove(path)
-        except OSError:
-            pass
+    cleanup_created_files(record_stored_files(row))
     return jsonify({'success': True})
+
+
+@app.route('/api/records/batch', methods=['DELETE'])
+@login_required
+def delete_records_batch():
+    data = request.get_json(silent=True) or {}
+    raw_ids = data.get('ids')
+    if not isinstance(raw_ids, list) or not raw_ids:
+        return jsonify({'error': '请选择要删除的记录', 'code': 'RECORD_IDS_REQUIRED'}), 400
+    if len(raw_ids) > 200:
+        return jsonify({'error': '单次最多删除 200 条记录', 'code': 'TOO_MANY_RECORDS'}), 400
+    if any(isinstance(record_id, bool) or not isinstance(record_id, int) or record_id <= 0 for record_id in raw_ids):
+        return jsonify({'error': '记录 ID 格式无效', 'code': 'INVALID_RECORD_IDS'}), 400
+
+    record_ids = list(dict.fromkeys(raw_ids))
+    placeholders = ','.join('?' for _ in record_ids)
+    with db_connection() as db:
+        rows = db.execute(
+            f'SELECT * FROM records WHERE user_id = ? AND id IN ({placeholders})',
+            [current_user_id(), *record_ids],
+        ).fetchall()
+        if len(rows) != len(record_ids):
+            return jsonify({'error': '部分记录不存在或不属于当前用户', 'code': 'RECORDS_NOT_FOUND'}), 404
+        db.execute(
+            f'DELETE FROM records WHERE user_id = ? AND id IN ({placeholders})',
+            [current_user_id(), *record_ids],
+        )
+
+    cleanup_created_files(path for row in rows for path in record_stored_files(row))
+    return jsonify({'success': True, 'deleted': len(rows)})
 
 
 def serve_record_file(record_id, kind, as_download=False):
     row = owned_record(record_id)
     if not row:
         return jsonify({'error': '记录不存在'}), 404
-    path = row['original_path'] if kind == 'original' else row['result_path']
-    filename = row['original_name'] if kind == 'original' else (row['result_name'] or 'result.png')
-    if not path or not os.path.exists(path):
+    if kind == 'original':
+        path = safe_stored_path(row['original_path'], UPLOAD_DIR)
+        filename = row['original_name']
+    elif kind == 'result':
+        path = safe_stored_path(row['result_path'], RESULT_DIR)
+        filename = row['result_name'] or 'result.png'
+    elif kind == 'recovered':
+        path = safe_stored_path(row['recovered_path'], RESULT_DIR)
+        filename = row['recovered_name'] or 'recovered.png'
+    elif kind == 'reference':
+        filename = row['reference_name'] or 'reference.png'
+        path = safe_stored_path(row['reference_path'], UPLOAD_DIR)
+        if not path and row['reference_record_id']:
+            reference_record = owned_record(row['reference_record_id'])
+            if reference_record and reference_record['operation'] == 'embed':
+                path = safe_stored_path(reference_record['result_path'], RESULT_DIR)
+    else:
+        return jsonify({'error': '文件类型无效'}), 404
+    if not path or not os.path.isfile(path):
         return jsonify({'error': '文件不存在'}), 404
     return send_file(path, as_attachment=as_download, download_name=filename)
 
@@ -544,15 +947,39 @@ def record_result(record_id):
     return serve_record_file(record_id, 'result', request.args.get('download') == '1')
 
 
+@app.route('/api/records/<int:record_id>/reference')
+@login_required
+def record_reference(record_id):
+    return serve_record_file(record_id, 'reference', request.args.get('download') == '1')
+
+
+@app.route('/api/records/<int:record_id>/recovered')
+@login_required
+def record_recovered(record_id):
+    return serve_record_file(record_id, 'recovered', request.args.get('download') == '1')
+
+
 @app.route('/api/result/<filename>')
 @login_required
 def get_legacy_result(filename):
     """Serve legacy output files and newly stored files by basename."""
     clean_name = secure_filename(filename)
-    for directory in (RESULT_DIR, LEGACY_OUTPUT_DIR):
-        path = os.path.join(directory, clean_name)
-        if os.path.exists(path):
-            return send_file(path, mimetype='image/png')
+    if not clean_name or clean_name != filename:
+        return jsonify({'error': '文件不存在'}), 404
+    with db_connection() as db:
+        rows = db.execute(
+            'SELECT result_path, recovered_path FROM records WHERE user_id = ?',
+            (current_user_id(),),
+        ).fetchall()
+    for row in rows:
+        for column in ('result_path', 'recovered_path'):
+            stored_path = row[column]
+            if not stored_path or os.path.basename(stored_path) != clean_name:
+                continue
+            for directory in (RESULT_DIR, LEGACY_OUTPUT_DIR):
+                path = safe_stored_path(stored_path, directory)
+                if path and os.path.isfile(path):
+                    return send_file(path)
     return jsonify({'error': '文件不存在'}), 404
 
 
